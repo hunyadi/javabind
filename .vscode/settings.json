@@ -1,0 +1,9 @@
+{
+    "cSpell.words": [
+        "javabind",
+        "Levente"
+    ],
+    "C_Cpp.autoAddFileAssociations": false,
+    "C_Cpp.default.cppStandard": "c++17",
+    "cmake.configureOnOpen": true
+}
