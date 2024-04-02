@@ -9,15 +9,15 @@
  */
 
 #pragma once
+
+#include "class.hpp"
+#include "record.hpp"
+#include "type.hpp"
+
 #include "exception.hpp"
-#include "local.hpp"
 #include "message.hpp"
 #include "signature.hpp"
 #include "traits.hpp"
-#include "type.hpp"
-#include <map>
-#include <string_view>
-#include <vector>
 
 namespace javabind
 {
@@ -41,7 +41,9 @@ namespace javabind
 
     template <> struct ArgType<void> { using type = JavaVoidType; };
     template <> struct ArgType<bool> { using type = JavaBooleanType; };
-    template <> struct ArgType<int> { using type = JavaIntegerType; };
+    template <> struct ArgType<int8_t> { using type = JavaByteType; };
+    template <> struct ArgType<int16_t> { using type = JavaShortType; };
+    template <> struct ArgType<int32_t> { using type = JavaIntegerType; };
     template <> struct ArgType<int64_t> { using type = JavaLongType; };
     template <> struct ArgType<float> { using type = JavaFloatType; };
     template <> struct ArgType<double> { using type = JavaDoubleType; };
@@ -52,7 +54,52 @@ namespace javabind
     template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };
     template <typename T> struct ArgType<std::vector<T>> { using type = JavaArrayType<T>; };
 
-    template <typename R, typename T> struct ArgType<std::function<R(T)>> { using type = JavaFunctionType<R, T>; };
+    template <typename R, typename T>
+    struct ArgType<std::function<R(T)>>
+    {
+        using type = JavaFunctionType<R, T>;
+    };
+
+    template <typename R> struct ArgType<std::function<R(int32_t)>> { using type = JavaIntFunctionType<R>; };
+    template <typename R> struct ArgType<std::function<R(int64_t)>> { using type = JavaLongFunctionType<R>; };
+    template <typename R> struct ArgType<std::function<R(double)>> { using type = JavaDoubleFunctionType<R>; };
+    template <typename T> struct ArgType<std::function<int32_t(T)>> { using type = JavaToIntFunctionType<T>; };
+    template <typename T> struct ArgType<std::function<int64_t(T)>> { using type = JavaToLongFunctionType<T>; };
+    template <typename T> struct ArgType<std::function<double(T)>> { using type = JavaToDoubleFunctionType<T>; };
+
+    /**
+     * Declares a class to serve as a data transfer type.
+     * Record classes marshal data between native and Java code with copy semantics.
+     * The lifecycle of the native and the Java object is not coupled.
+     */
+    template <typename T>
+    struct record_class
+    {
+        record_class() = default;
+        record_class(const record_class&) = delete;
+        record_class(record_class&&) = delete;
+
+        template <auto member>
+        record_class& field(const char* name) {
+            static_assert(std::is_member_object_pointer_v<decltype(member)>, "The template argument is expected to be a member variable pointer type.");
+            using member_type = typename FieldType<decltype(member)>::type;
+
+            auto&& bindings = FieldBindings::value[ArgType<T>::type::sig];
+            bindings.push_back({
+                name,
+                ArgType<member_type>::type::sig,
+                [](JNIEnv* env, jobject obj, Field& fld, const void* native_object_ptr) {
+                    const T* native_object = reinterpret_cast<const T*>(native_object_ptr);
+                    ArgType<member_type>::type::java_set_field_value(env, obj, fld, native_object->*member);
+                },
+                [](JNIEnv* env, jobject obj, Field& fld, void* native_object_ptr) {
+                    T* native_object = reinterpret_cast<T*>(native_object_ptr);
+                    native_object->*member = ArgType<member_type>::type::native_field_value(env, obj, fld);
+                }
+                });
+            return *this;
+        }
+    };
 
     /**
      * Wraps a native function pointer into a function pointer callable from Java.
@@ -169,7 +216,7 @@ namespace javabind
         {
             try {
                 // instantiate native object
-                T* ptr = new T(ArgType<Args>::native_value(env, args)...);
+                T* ptr = new T(ArgType<Args>::type::native_value(env, args)...);
 
                 // instantiate Java object by skipping constructor
                 LocalClassRef objClass(env, cls);
@@ -180,7 +227,7 @@ namespace javabind
 
                 // store native pointer in Java object field
                 Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig.data());
-                ArgType<T*>::type::java_field_value(env, obj, field, ptr);
+                ArgType<T*>::type::java_set_field_value(env, obj, field, ptr);
 
                 return obj;
             } catch (JavaException& ex) {
@@ -212,7 +259,7 @@ namespace javabind
                 delete ptr;
 
                 // prevent accidental duplicate delete
-                ArgType<T*>::type::java_field_value(env, obj, field, nullptr);
+                ArgType<T*>::type::java_set_field_value(env, obj, field, nullptr);
             } catch (JavaException& ex) {
                 env->Throw(ex.innerException());
             } catch (std::exception& ex) {

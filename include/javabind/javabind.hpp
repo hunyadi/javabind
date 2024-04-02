@@ -73,6 +73,31 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
         if (env->ExceptionCheck()) {
             return JNI_ERR;
         }
+
+        // check property bindings
+        for (auto&& [class_name, bindings] : FieldBindings::value) {
+            // find the native class; JNI_OnLoad is called from the correct class loader context for this to work
+            LocalClassRef cls(env, class_name.data(), std::nothrow);
+            if (cls.ref() == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Cannot find Java record class '" << class_name << "' registered as a plain data class in C++ code"
+                );
+                return JNI_ERR;
+            }
+
+            // try to look up registered fields
+            for (auto&& binding : bindings) {
+                jfieldID ref = env->GetFieldID(cls.ref(), binding.name.data(), binding.signature.data());
+                if (ref != nullptr) {
+                    continue;  // everything OK, field exists
+                }
+
+                javabind::throw_exception(env,
+                    msg() << "Cannot find field '" << binding.name << "' with type signature '" << binding.signature << "' in registered class '" << class_name << "'"
+                );
+                return JNI_ERR;
+            }
+        }
     } catch (std::exception&) {
         // ensure no native exception is propagated to Java
         return JNI_ERR;
@@ -88,6 +113,14 @@ static void java_termination_impl(JavaVM* vm)
 {
     javabind::Environment::unload(vm);
 }
+
+#define DECLARE_RECORD_CLASS(record_type, java_class_qualifier) \
+    template <> struct ::javabind::ClassTraits<record_type> { \
+        constexpr static std::string_view class_name = java_class_qualifier; \
+    }; \
+    template <> struct ::javabind::ArgType<record_type> { \
+        using type = ::javabind::RecordClassJavaType<record_type>; \
+    };
 
 //
 // Establishes a mapping between a composite native type and a Java class with

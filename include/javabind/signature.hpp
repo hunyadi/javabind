@@ -17,6 +17,14 @@ namespace javabind
     struct ArgType;
 
     template <typename>
+    struct FieldType;
+
+    template <typename T, typename R>
+    struct FieldType<R(T::*)> {
+        using type = R;
+    };
+
+    template <typename>
     struct FunctionTraits;
 
     template <typename R, typename... Args>

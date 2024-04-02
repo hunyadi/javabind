@@ -71,6 +71,10 @@ namespace javabind
      */
     class Method
     {
+        Method(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
+            : Method(env, cls, name.data(), signature)
+        {}
+
         Method(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
             _ref = env->GetMethodID(cls, name, signature.data());
@@ -97,6 +101,10 @@ namespace javabind
      */
     class StaticMethod
     {
+        StaticMethod(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
+            : StaticMethod(env, cls, name.data(), signature)
+        {}
+
         StaticMethod(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
             _ref = env->GetStaticMethodID(cls, name, signature.data());
@@ -125,6 +133,10 @@ namespace javabind
      */
     class Field
     {
+        Field(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
+            : Field(env, cls, name.data(), signature)
+        {}
+
         Field(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
             _ref = env->GetFieldID(cls, name, signature.data());
@@ -153,6 +165,10 @@ namespace javabind
      */
     class StaticField
     {
+        StaticField(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
+            : StaticField(env, cls, name.data(), signature)
+        {}
+
         StaticField(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
             _ref = env->GetStaticFieldID(cls, name, signature.data());
@@ -265,7 +281,17 @@ namespace javabind
             return Method(_env, _ref, name, signature);
         }
 
+        Method getMethod(const std::string_view& name, const std::string_view& signature)
+        {
+            return Method(_env, _ref, name, signature);
+        }
+
         Field getField(const char* name, const std::string_view& signature)
+        {
+            return Field(_env, _ref, name, signature);
+        }
+
+        Field getField(const std::string_view& name, const std::string_view& signature)
         {
             return Field(_env, _ref, name, signature);
         }
@@ -275,7 +301,17 @@ namespace javabind
             return StaticMethod(_env, _ref, name, signature);
         }
 
+        StaticMethod getStaticMethod(const std::string_view& name, const std::string_view& signature)
+        {
+            return StaticMethod(_env, _ref, name, signature);
+        }
+
         StaticField getStaticField(const char* name, const std::string_view& signature)
+        {
+            return StaticField(_env, _ref, name, signature);
+        }
+
+        StaticField getStaticField(const std::string_view& name, const std::string_view& signature)
         {
             return StaticField(_env, _ref, name, signature);
         }

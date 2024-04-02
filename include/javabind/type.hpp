@@ -19,6 +19,8 @@ namespace javabind
     template <typename T>
     struct boxed
     {
+        static_assert(std::is_arithmetic_v<T>, "Only C++ arithmetic types (Java primitive types) can be boxed.");
+
         boxed() : value() {}
         boxed(const T& value) : value(value) {}
 
@@ -65,7 +67,7 @@ namespace javabind
          */
         static native_type native_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
-            return WrapperType::native_value(env, JavaType::java_get_field_value(env, obj, fld));
+            return WrapperType::native_value(env, WrapperType::java_get_field_value(env, obj, fld));
         }
     };
 
@@ -109,13 +111,93 @@ namespace javabind
         }
     };
 
-    struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType, int, jint>
+    struct JavaByteType : PrimitiveJavaType<JavaByteType, int8_t, jbyte>
+    {
+        constexpr static std::string_view class_name = "java.lang.Byte";
+        constexpr static std::string_view primitive_name = "byte";
+        constexpr static std::string_view sig = "B";
+
+        using native_type = int8_t;
+        using java_type = jbyte;
+
+        static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
+        {
+            return env->GetByteField(obj, fld.ref());
+        }
+
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int8_t value)
+        {
+            env->SetByteField(obj, fld.ref(), java_value(env, value));
+        }
+
+        static java_type java_call(JNIEnv* env, jobject obj, Method& m)
+        {
+            return env->CallByteMethod(obj, m.ref());
+        }
+
+        static void native_array_value(JNIEnv* env, jarray arr, native_type* ptr, std::size_t len)
+        {
+            env->GetByteArrayRegion(static_cast<jbyteArray>(arr), 0, static_cast<jsize>(len), reinterpret_cast<jbyte*>(ptr));
+        }
+
+        static jarray java_array_value(JNIEnv* env, const native_type* ptr, std::size_t len)
+        {
+            jbyteArray arr = env->NewByteArray(static_cast<jsize>(len));
+            if (arr == nullptr) {
+                throw JavaException(env);
+            }
+            env->SetByteArrayRegion(arr, 0, static_cast<jsize>(len), reinterpret_cast<const jbyte*>(ptr));
+            return arr;
+        }
+    };
+
+    struct JavaShortType : PrimitiveJavaType<JavaShortType, int16_t, jshort>
+    {
+        constexpr static std::string_view class_name = "java.lang.Short";
+        constexpr static std::string_view primitive_name = "short";
+        constexpr static std::string_view sig = "S";
+
+        using native_type = int16_t;
+        using java_type = jshort;
+
+        static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
+        {
+            return env->GetShortField(obj, fld.ref());
+        }
+
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int16_t value)
+        {
+            env->SetShortField(obj, fld.ref(), java_value(env, value));
+        }
+
+        static java_type java_call(JNIEnv* env, jobject obj, Method& m)
+        {
+            return env->CallShortMethod(obj, m.ref());
+        }
+
+        static void native_array_value(JNIEnv* env, jarray arr, native_type* ptr, std::size_t len)
+        {
+            env->GetShortArrayRegion(static_cast<jshortArray>(arr), 0, static_cast<jsize>(len), reinterpret_cast<jshort*>(ptr));
+        }
+
+        static jarray java_array_value(JNIEnv* env, const native_type* ptr, std::size_t len)
+        {
+            jshortArray arr = env->NewShortArray(static_cast<jsize>(len));
+            if (arr == nullptr) {
+                throw JavaException(env);
+            }
+            env->SetShortArrayRegion(arr, 0, static_cast<jsize>(len), reinterpret_cast<const jshort*>(ptr));
+            return arr;
+        }
+    };
+
+    struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType, int32_t, jint>
     {
         constexpr static std::string_view class_name = "java.lang.Integer";
         constexpr static std::string_view primitive_name = "int";
         constexpr static std::string_view sig = "I";
 
-        using native_type = int;
+        using native_type = int32_t;
         using java_type = jint;
 
         static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
@@ -123,7 +205,7 @@ namespace javabind
             return env->GetIntField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int32_t value)
         {
             env->SetIntField(obj, fld.ref(), java_value(env, value));
         }
@@ -287,7 +369,7 @@ namespace javabind
             return reinterpret_cast<T*>(base_type::native_value(env, env->GetLongField(obj, fld.ref())));
         }
 
-        static void java_field_value(JNIEnv* env, jobject obj, Field& fld, T* value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, T* value)
         {
             env->SetLongField(obj, fld.ref(), base_type::java_value(env, reinterpret_cast<intptr_t>(value)));
         }
@@ -362,11 +444,6 @@ namespace javabind
         constexpr static std::string_view class_name = "java.lang.String";
         constexpr static std::string_view sig = "Ljava/lang/String;";
 
-        static native_type native_field_value(JNIEnv* env, jobject obj, Field& fld)
-        {
-            return native_value(env, static_cast<jstring>(env->GetObjectField(obj, fld.ref())));
-        }
-
         static native_type native_value(JNIEnv* env, java_type value)
         {
             jsize len = env->GetStringUTFLength(value);
@@ -383,6 +460,18 @@ namespace javabind
         {
             return env->NewStringUTF(value.data());
         }
+
+        static native_type native_field_value(JNIEnv* env, jobject obj, Field& fld)
+        {
+            LocalObjectRef objFieldValue(env, env->GetObjectField(obj, fld.ref()));
+            return native_value(env, static_cast<jstring>(objFieldValue.ref()));
+        }
+
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, const native_type& value)
+        {
+            LocalObjectRef objFieldValue(env, java_value(env, value));
+            env->SetObjectField(obj, fld.ref(), objFieldValue.ref());
+        }
     };
 
     template <typename WrapperType, typename ElementType>
@@ -397,7 +486,7 @@ namespace javabind
             return WrapperType::native_value(env, static_cast<jarray>(objFieldValue.ref()));
         }
 
-        static void java_field_value(JNIEnv* env, jobject obj, Field& fld, const native_type& value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, const native_type& value)
         {
             LocalObjectRef objFieldValue(env, WrapperType::java_value(env, value));
             env->SetObjectField(obj, fld.ref(), objFieldValue.ref());
@@ -483,121 +572,23 @@ namespace javabind
         }
     };
 
-    /**
-     * Stores information about a native type and Java class binding.
-     * Typically extended by DECLARE_NATIVE_CLASS or DECLARE_STATIC_CLASS via template specialization.
-     */
-    template <typename T>
-    struct ClassTraits
-    {};
-
-    /**
-     * Base class for all object types such as strings, lists, maps, and native classes.
-     */
-    template <typename T>
-    struct ObjectJavaType
-    {
-        using native_type = T;
-        using java_type = jobject;
-
-    private:
-        constexpr static std::string_view class_type_prefix = "L";
-        constexpr static std::string_view class_type_suffix = ";";
-        constexpr static std::string_view lparen = "(";
-        constexpr static std::string_view rparen = ")";
-
-    public:
-        constexpr static std::string_view class_name = ClassTraits<T>::class_name;
-        constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
-        constexpr static std::string_view sig = join_v<class_type_prefix, class_path, class_type_suffix>;
-    };
-
-    /**
-     * Base class for all assignable object types.
-     */
-    template <typename T>
-    struct AssignableJavaType : ObjectJavaType<T>
-    {
-        using native_type = T;
-        using java_type = jobject;
-
-        static native_type native_field_value(JNIEnv* env, jobject obj, Field& fld)
-        {
-            return ArgType<T>::type::native_value(env, env->GetObjectField(obj, fld.ref()));
-        }
-
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
-        {
-            // use local reference to ensure temporary object is released
-            LocalObjectRef objFieldValue(env, ArgType<T>::type::java_value(env, value));
-            env->SetObjectField(obj, fld.ref(), objFieldValue.ref());
-        }
-    };
-
-    template <typename T>
-    struct StaticClassJavaType : ObjectJavaType<T>
-    {};
-
-    /**
-     * Marshals types that live primarily in the native space, and accessed through an opaque handle in Java.
-     */
-    template <typename T>
-    struct NativeClassJavaType : AssignableJavaType<T>
-    {
-        static T& native_value(JNIEnv* env, jobject obj)
-        {
-            // look up field that stores native pointer
-            LocalClassRef cls(env, obj);
-            Field field = cls.getField("nativePointer", ArgType<T*>::type::sig.data());
-            T* ptr = ArgType<T*>::native_field_value(env, obj, field);
-            return *ptr;
-        }
-
-        static jobject java_value(JNIEnv* env, T&& native_object)
-        {
-            // instantiate native object using copy or move constructor
-            T* ptr = new T(std::forward<T>(native_object));
-
-            // instantiate Java object by skipping constructor
-            LocalClassRef objClass(env, ClassTraits<T>::class_name.data());
-            jobject obj = env->AllocObject(objClass.ref());
-            if (obj == nullptr) {
-                throw JavaException(env);
-            }
-
-            // store native pointer in Java object field
-            Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig.data());
-            ArgType<T*>::java_field_value(env, obj, field, ptr);
-
-            return obj;
-        }
-    };
-
-    template <typename Result, typename Arg>
-    struct JavaFunctionType
+    template <typename WrapperType, typename Result, typename Arg>
+    struct JavaFunctionBase
     {
         static_assert(!std::is_same_v<Result, void>, "Use a non-void return type.");
 
         using native_type = std::function<Result(Arg)>;
         using java_type = jobject;
+        using result_java_type = typename ArgType<Result>::type::java_type;
 
-        constexpr static std::string_view class_name = "java.util.function.Function";
-        constexpr static std::string_view sig = "Ljava/util/function/Function;";
-
-    private:
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Ljava/lang/Object;";
-
-    public:
         static native_type native_value(JNIEnv* env, java_type obj)
         {
-            using result_java_type = typename ArgType<Result>::type::java_type;
-
             GlobalObjectRef fun = GlobalObjectRef(env, obj);
             LocalClassRef cls(env, fun.ref());
-            Method invoke = cls.getMethod("apply", apply_sig);  // lifecycle bound to object reference
+            Method invoke = cls.getMethod(WrapperType::apply_fn, WrapperType::apply_sig);  // lifecycle bound to object reference
             return native_type(
                 [fun = std::move(fun), invoke = std::move(invoke)]
-                (Arg arg) -> Result
+                (const Arg& arg) -> Result
                 {
                     // retrieve an environment reference (which may not be the same as when the function object was created)
                     JNIEnv* env = this_thread.getEnv();
@@ -606,18 +597,22 @@ namespace javabind
                         return Result();
                     }
 
-                    // Java `Function` interface has an `apply` method that takes and returns Object instances;
-                    // primitive types need boxing/unboxing
-                    auto res = LocalObjectRef(env,
-                        env->CallObjectMethod(
-                            fun.ref(), invoke.ref(),
-                            LocalObjectRef(env, ArgType<Arg>::type::java_value(env, arg)).ref()
-                        )
-                    );
-                    if (env->ExceptionCheck()) {
-                        throw JavaException(env);
+                    auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
+                    if constexpr (std::is_same_v<decltype(ret), jobject>) {
+                        // ensure proper deallocation for jobject
+                        LocalObjectRef res = LocalObjectRef(env, ret);
+                        if (env->ExceptionCheck()) {
+                            throw JavaException(env);
+                        }
+                        return ArgType<Result>::type::native_value(env, static_cast<result_java_type>(res.ref()));
                     }
-                    return ArgType<Result>::type::native_value(env, static_cast<result_java_type>(res.ref()));
+                    else {
+                        // no special treatment for primitive types
+                        if (env->ExceptionCheck()) {
+                            throw JavaException(env);
+                        }
+                        return ArgType<Result>::type::native_value(env, ret);
+                    }
                 }
             );
         }
@@ -625,6 +620,137 @@ namespace javabind
         static java_type java_value(JNIEnv*, const native_type&)
         {
             throw std::runtime_error("C++ functions returning a function object to Java are not supported.");
+        }
+    };
+
+    template <typename Result, typename Arg>
+    struct JavaFunctionType : JavaFunctionBase<JavaFunctionType<Result, Arg>, Result, Arg>
+    {
+        static_assert(!std::is_fundamental_v<Result>, "Result type cannot be a C++ fundamental type for an object-to-object Java function.");
+        static_assert(!std::is_fundamental_v<Arg>, "Argument type cannot be a C++ fundamental type for an object-to-object Java function.");
+
+        using native_type = std::function<Result(Arg)>;
+        using java_type = typename ArgType<Arg>::type::java_type;
+
+        constexpr static std::string_view class_name = "java.util.function.Function";
+        constexpr static std::string_view sig = "Ljava/util/function/Function;";
+
+        constexpr static std::string_view apply_fn = "apply";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Ljava/lang/Object;";
+
+    public:
+        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, java_type val)
+        {
+            // Java `Function` interface has an `apply` method that takes and returns Object instances;
+            return env->CallObjectMethod(fn, m, LocalObjectRef(env, val).ref());
+        }
+    };
+
+    template <typename Result>
+    struct JavaIntFunctionType : JavaFunctionBase<JavaIntFunctionType<Result>, Result, int32_t>
+    {
+        using native_type = std::function<Result(int32_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.IntFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/IntFunction;";
+
+        constexpr static std::string_view apply_fn = "apply";
+        constexpr static std::string_view apply_sig = "(I)Ljava/lang/Object;";
+
+    public:
+        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jint val)
+        {
+            return env->CallObjectMethod(fn, m, val);
+        }
+    };
+
+    template <typename Result>
+    struct JavaLongFunctionType : JavaFunctionBase<JavaLongFunctionType<Result>, Result, int64_t>
+    {
+        using native_type = std::function<Result(int64_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.LongFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/LongFunction;";
+
+        constexpr static std::string_view apply_fn = "apply";
+        constexpr static std::string_view apply_sig = "(J)Ljava/lang/Object;";
+
+    public:
+        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
+        {
+            return env->CallObjectMethod(fn, m, val);
+        }
+    };
+
+    template <typename Result>
+    struct JavaDoubleFunctionType : JavaFunctionBase<JavaDoubleFunctionType<Result>, Result, double>
+    {
+        using native_type = std::function<Result(double)>;
+
+        constexpr static std::string_view class_name = "java.util.function.DoubleFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/DoubleFunction;";
+
+        constexpr static std::string_view apply_fn = "apply";
+        constexpr static std::string_view apply_sig = "(D)Ljava/lang/Object;";
+
+    public:
+        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jdouble val)
+        {
+            return env->CallObjectMethod(fn, m, val);
+        }
+    };
+
+    template <typename Arg>
+    struct JavaToIntFunctionType : JavaFunctionBase<JavaToIntFunctionType<Arg>, int32_t, Arg>
+    {
+        using native_type = std::function<int32_t(Arg)>;
+
+        constexpr static std::string_view class_name = "java.util.function.ToIntFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/ToIntFunction;";
+
+        constexpr static std::string_view apply_fn = "applyAsInt";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)I";
+
+    public:
+        static jint native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
+        {
+            return env->CallIntMethod(fn, m, val);
+        }
+    };
+
+    template <typename Arg>
+    struct JavaToLongFunctionType : JavaFunctionBase<JavaToLongFunctionType<Arg>, int64_t, Arg>
+    {
+        using native_type = std::function<int64_t(Arg)>;
+
+        constexpr static std::string_view class_name = "java.util.function.ToLongFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/ToLongFunction;";
+
+        constexpr static std::string_view apply_fn = "applyAsLong";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)J";
+
+    public:
+        static jlong native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
+        {
+            return env->CallLongMethod(fn, m, val);
+        }
+    };
+
+    template <typename Arg>
+    struct JavaToDoubleFunctionType : JavaFunctionBase<JavaToDoubleFunctionType<Arg>, double, Arg>
+    {
+        using native_type = std::function<double(Arg)>;
+
+        constexpr static std::string_view class_name = "java.util.function.ToDoubleFunction";
+        constexpr static std::string_view sig = "Ljava/util/function/ToDoubleFunction;";
+
+        constexpr static std::string_view apply_fn = "applyAsDouble";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)D";
+
+    public:
+        static jdouble native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
+        {
+            return env->CallDoubleMethod(fn, m, val);
         }
     };
 }
