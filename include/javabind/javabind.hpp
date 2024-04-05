@@ -16,6 +16,7 @@
 #include "global.hpp"
 #include "output.hpp"
 #include "binding.hpp"
+#include "callback.hpp"
 #include "message.hpp"
 #include <algorithm>
 
@@ -40,6 +41,29 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
     try {
         // invoke user-defined function
         initializer();
+
+        // register callback bindings
+        rc = register_callback<object, object>(env, "NativeFunction", "apply");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<object, int32_t>(env, "NativeIntFunction", "apply");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<object, int64_t>(env, "NativeLongFunction", "apply");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<object, double>(env, "NativeDoubleFunction", "apply");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<int32_t, object>(env, "NativeToIntFunction", "applyAsInt");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<int64_t, object>(env, "NativeToLongFunction", "applyAsLong");
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<double, object>(env, "NativeToDoubleFunction", "applyAsDouble");
+        if (rc != JNI_OK)
+            return rc;
 
         // register function bindings
         for (auto&& [class_name, bindings] : FunctionBindings::value) {
@@ -77,7 +101,7 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
         // check property bindings
         for (auto&& [class_name, bindings] : FieldBindings::value) {
             // find the native class; JNI_OnLoad is called from the correct class loader context for this to work
-            LocalClassRef cls(env, class_name.data(), std::nothrow);
+            LocalClassRef cls(env, class_name, std::nothrow);
             if (cls.ref() == nullptr) {
                 javabind::throw_exception(env,
                     msg() << "Cannot find Java record class '" << class_name << "' registered as a plain data class in C++ code"

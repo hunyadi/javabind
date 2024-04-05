@@ -58,7 +58,7 @@ namespace javabind
             T native_object;
             auto&& bindings = FieldBindings::value[sig];
             for (auto&& binding : bindings) {
-                Field fld = objClass.getField(binding.name.data(), binding.signature);
+                Field fld = objClass.getField(binding.name, binding.signature);
                 binding.set_by_value(env, obj, fld, &native_object);
             }
             return native_object;
@@ -66,7 +66,7 @@ namespace javabind
 
         static jobject java_value(JNIEnv* env, const T& native_object)
         {
-            LocalClassRef objClass(env, sig.data());
+            LocalClassRef objClass(env, sig);
             jobject obj = env->AllocObject(objClass.ref());
             if (obj == nullptr) {
                 throw JavaException(env);
@@ -74,7 +74,7 @@ namespace javabind
 
             auto&& bindings = FieldBindings::value[sig];
             for (auto&& binding : bindings) {
-                Field fld = objClass.getField(binding.name.data(), binding.signature);
+                Field fld = objClass.getField(binding.name, binding.signature);
                 binding.get_by_value(env, obj, fld, &native_object);
             }
             return obj;
@@ -82,7 +82,7 @@ namespace javabind
 
         static jarray java_array_value(JNIEnv* env, const native_type* ptr, std::size_t len)
         {
-            LocalClassRef elementClass(env, ArgType<T>::class_name.data());
+            LocalClassRef elementClass(env, ArgType<T>::class_name);
             jobjectArray arr = env->NewObjectArray(len, elementClass.ref(), nullptr);
             if (arr == nullptr) {
                 throw JavaException(env);

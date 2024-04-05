@@ -1,11 +1,25 @@
 package hu.info.hunyadi.test;
 
-import java.util.Arrays;
+import hu.info.hunyadi.javabind.NativeFunction;
+import hu.info.hunyadi.javabind.NativeIntFunction;
+import hu.info.hunyadi.javabind.NativeLongFunction;
+import hu.info.hunyadi.javabind.NativeDoubleFunction;
+import hu.info.hunyadi.javabind.NativeToIntFunction;
+import hu.info.hunyadi.javabind.NativeToLongFunction;
+import hu.info.hunyadi.javabind.NativeToDoubleFunction;
+
 import hu.info.hunyadi.test.Rectangle;
 import hu.info.hunyadi.test.Sample;
 import hu.info.hunyadi.test.StaticSample;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
 public class TestJavaBind {
+    public static String string_transform(String source) {
+        return source.replace(' ', '_');
+    }
+
     public static void main(String[] args) {
         System.out.println("LOAD: Java host application");
         System.loadLibrary("javabind_native");
@@ -47,12 +61,28 @@ public class TestJavaBind {
         System.out.println("PASS: class functions with array types");
 
         assert StaticSample.pass_function("my string", s -> "'" + s + "'").equals("my string -> 'my string'");
-        assert StaticSample.int_to_string_function(123, val -> String.valueOf(val)).equals("123");
-        assert StaticSample.long_to_string_function(456789, val -> String.valueOf(val)).equals("456789");
-        assert StaticSample.double_to_string_function(0.125, val -> String.valueOf(val)).equals("0.125");
-        assert StaticSample.string_to_int_function("123", val -> Integer.parseInt(val)) == 123;
-        assert StaticSample.string_to_long_function("456789", val -> Long.parseLong(val)) == 456789;
-        assert StaticSample.string_to_double_function("0.125", val -> Double.parseDouble(val)) == 0.125;
+        Function<String, String> replace = StaticSample.returns_function(" ", "_");
+        assert replace.apply("my string").equals("my_string");
+        assert replace.apply("lorem ipsum dolor sit amet").equals("lorem_ipsum_dolor_sit_amet");
+
+        assert StaticSample.apply_int_to_string_function(123, val -> String.valueOf(val)).equals("123");
+        assert StaticSample.apply_long_to_string_function(456789, val -> String.valueOf(val)).equals("456789");
+        assert StaticSample.apply_double_to_string_function(0.125, val -> String.valueOf(val)).equals("0.125");
+        assert StaticSample.apply_string_to_int_function("123", val -> Integer.parseInt(val)) == 123;
+        assert StaticSample.apply_string_to_long_function("456789", val -> Long.parseLong(val)) == 456789;
+        assert StaticSample.apply_string_to_double_function("0.125", val -> Double.parseDouble(val)) == 0.125;
+
+        assert StaticSample.get_int_to_string_function().apply(123).equals("123");
+        assert StaticSample.get_long_to_string_function().apply(456789l).equals("456789");
+        assert StaticSample.get_double_to_string_function().apply(0.125).equals("0.125");
+        assert StaticSample.get_string_to_int_function().applyAsInt("123") == 123;
+        assert StaticSample.get_string_to_long_function().applyAsLong("456789") == 456789l;
+        assert StaticSample.get_string_to_double_function().applyAsDouble("0.125") == 0.125;
+
+        try {
+            StaticSample.get_string_to_int_function().applyAsInt("abcd");
+            assert false;
+        } catch (Exception e) {}
         System.out.println("PASS: functional interface");
 
         assert StaticSample.pass_record(new Rectangle(1.0, 2.0)).equals(new Rectangle(2.0, 4.0));

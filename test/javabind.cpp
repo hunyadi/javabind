@@ -9,6 +9,7 @@
  */
 
 #include <javabind/javabind.hpp>
+#include <charconv>
 
 template <typename L>
 std::ostream& write_bracketed_list(std::ostream& os, const L& vec, char left, char right)
@@ -216,40 +217,92 @@ struct StaticSample
         return str + " -> " + fn(str);
     }
 
-    static std::string int_to_string_function(int32_t val, const std::function<std::string(int32_t)>& fn)
+    static std::function<std::string(std::string)> returns_function(const std::string& search, const std::string& replace)
     {
-        JAVA_OUTPUT << "int_to_string_function(" << val << ")" << std::endl;
+        return
+            [search, replace](const std::string& str) -> std::string
+            {
+                std::string res;
+                std::size_t index = 0;
+                while (true) {
+                    std::size_t pos = str.find(search, index);
+                    if (pos == std::string::npos) {
+                        res.append(str.substr(index));
+                        break;
+                    }
+                    res.append(str.substr(index, pos - index));
+                    res.append(replace);
+                    index = pos + search.size();
+                }
+                return res;
+            };
+    }
+
+    static std::string apply_int_to_string_function(int32_t val, const std::function<std::string(int32_t)>& fn)
+    {
+        JAVA_OUTPUT << "apply_int_to_string_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static std::string long_to_string_function(int64_t val, const std::function<std::string(int64_t)>& fn)
+    static std::string apply_long_to_string_function(int64_t val, const std::function<std::string(int64_t)>& fn)
     {
-        JAVA_OUTPUT << "long_to_string_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_long_to_string_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static std::string double_to_string_function(double val, const std::function<std::string(double)>& fn)
+    static std::string apply_double_to_string_function(double val, const std::function<std::string(double)>& fn)
     {
-        JAVA_OUTPUT << "double_to_string_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_double_to_string_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static int32_t string_to_int_function(const std::string& val, const std::function<int32_t(std::string)>& fn)
+    static int32_t apply_string_to_int_function(const std::string& val, const std::function<int32_t(std::string)>& fn)
     {
-        JAVA_OUTPUT << "string_to_int_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_string_to_int_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static int64_t string_to_long_function(const std::string& val, const std::function<int64_t(std::string)>& fn)
+    static int64_t apply_string_to_long_function(const std::string& val, const std::function<int64_t(std::string)>& fn)
     {
-        JAVA_OUTPUT << "string_to_long_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_string_to_long_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static double string_to_double_function(const std::string& val, const std::function<double(std::string)>& fn)
+    static double apply_string_to_double_function(const std::string& val, const std::function<double(std::string)>& fn)
     {
-        JAVA_OUTPUT << "string_to_double_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_string_to_double_function(" << val << ")" << std::endl;
         return fn(val);
+    }
+
+    template <typename T>
+    static std::function<std::string(T)> get_to_string_function()
+    {
+        return
+            [](T val)
+            {
+                std::array<char, 64> buf;
+                std::string str;
+                auto res = std::to_chars(buf.data(), buf.data() + buf.size(), val);
+                if (res.ec != std::errc{}) {
+                    throw std::runtime_error("to_chars");
+                }
+                return std::string(buf.data(), res.ptr);
+            };
+    }
+
+    template <typename R>
+    static std::function<R(std::string)> get_from_string_function()
+    {
+        return
+            [](const std::string& str)
+            {
+                R val;
+                auto res = std::from_chars(str.data(), str.data() + str.size(), val);
+                if (res.ec != std::errc() || res.ptr != str.data() + str.size()) {
+                    throw std::runtime_error("from_chars");
+                }
+                return val;
+            };
     }
 
     static Rectangle pass_record(const Rectangle& rect)
@@ -334,12 +387,19 @@ JAVA_EXTENSION_MODULE()
 
         // functional interface
         .function<StaticSample::pass_function>("pass_function")
-        .function<StaticSample::int_to_string_function>("int_to_string_function")
-        .function<StaticSample::long_to_string_function>("long_to_string_function")
-        .function<StaticSample::double_to_string_function>("double_to_string_function")
-        .function<StaticSample::string_to_int_function>("string_to_int_function")
-        .function<StaticSample::string_to_long_function>("string_to_long_function")
-        .function<StaticSample::string_to_double_function>("string_to_double_function")
+        .function<StaticSample::returns_function>("returns_function")
+        .function<StaticSample::apply_int_to_string_function>("apply_int_to_string_function")
+        .function<StaticSample::apply_long_to_string_function>("apply_long_to_string_function")
+        .function<StaticSample::apply_double_to_string_function>("apply_double_to_string_function")
+        .function<StaticSample::apply_string_to_int_function>("apply_string_to_int_function")
+        .function<StaticSample::apply_string_to_long_function>("apply_string_to_long_function")
+        .function<StaticSample::apply_string_to_double_function>("apply_string_to_double_function")
+        .function<StaticSample::get_to_string_function<int32_t>>("get_int_to_string_function")
+        .function<StaticSample::get_to_string_function<int64_t>>("get_long_to_string_function")
+        .function<StaticSample::get_to_string_function<double>>("get_double_to_string_function")
+        .function<StaticSample::get_from_string_function<int32_t>>("get_string_to_int_function")
+        .function<StaticSample::get_from_string_function<int64_t>>("get_string_to_long_function")
+        .function<StaticSample::get_from_string_function<double>>("get_string_to_double_function")
 
         // record class
         .function<StaticSample::pass_record>("pass_record")

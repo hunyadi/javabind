@@ -10,12 +10,17 @@
 
 #pragma once
 #include "local.hpp"
-#include <functional>
 #include <string_view>
 #include <vector>
 
 namespace javabind
 {
+    /**
+     * Represents a raw Java object.
+     */
+    struct object
+    {};
+
     template <typename T>
     struct boxed
     {
@@ -427,10 +432,18 @@ namespace javabind
             auto java_value = WrappedType::java_value(env, value);
 
             // box into object
-            LocalClassRef cls(env, class_path.data());
+            LocalClassRef cls(env, class_path);
             StaticMethod valueOf = cls.getStaticMethod("valueOf", value_initializer);
             return env->CallStaticObjectMethod(cls.ref(), valueOf.ref(), java_value);
         }
+    };
+
+    struct JavaObjectType
+    {
+        using java_type = jobject;
+
+        constexpr static std::string_view class_name = "java.lang.Object";
+        constexpr static std::string_view sig = "Ljava/lang/Object;";
     };
 
     /**
@@ -569,188 +582,6 @@ namespace javabind
 
             env->ReleasePrimitiveArrayCritical(arr, bool_array, 0);
             return arr;
-        }
-    };
-
-    template <typename WrapperType, typename Result, typename Arg>
-    struct JavaFunctionBase
-    {
-        static_assert(!std::is_same_v<Result, void>, "Use a non-void return type.");
-
-        using native_type = std::function<Result(Arg)>;
-        using java_type = jobject;
-        using result_java_type = typename ArgType<Result>::type::java_type;
-
-        static native_type native_value(JNIEnv* env, java_type obj)
-        {
-            GlobalObjectRef fun = GlobalObjectRef(env, obj);
-            LocalClassRef cls(env, fun.ref());
-            Method invoke = cls.getMethod(WrapperType::apply_fn, WrapperType::apply_sig);  // lifecycle bound to object reference
-            return native_type(
-                [fun = std::move(fun), invoke = std::move(invoke)]
-                (const Arg& arg) -> Result
-                {
-                    // retrieve an environment reference (which may not be the same as when the function object was created)
-                    JNIEnv* env = this_thread.getEnv();
-                    if (!env) {
-                        assert(!"consistency failure");
-                        return Result();
-                    }
-
-                    auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
-                    if constexpr (std::is_same_v<decltype(ret), jobject>) {
-                        // ensure proper deallocation for jobject
-                        LocalObjectRef res = LocalObjectRef(env, ret);
-                        if (env->ExceptionCheck()) {
-                            throw JavaException(env);
-                        }
-                        return ArgType<Result>::type::native_value(env, static_cast<result_java_type>(res.ref()));
-                    }
-                    else {
-                        // no special treatment for primitive types
-                        if (env->ExceptionCheck()) {
-                            throw JavaException(env);
-                        }
-                        return ArgType<Result>::type::native_value(env, ret);
-                    }
-                }
-            );
-        }
-
-        static java_type java_value(JNIEnv*, const native_type&)
-        {
-            throw std::runtime_error("C++ functions returning a function object to Java are not supported.");
-        }
-    };
-
-    template <typename Result, typename Arg>
-    struct JavaFunctionType : JavaFunctionBase<JavaFunctionType<Result, Arg>, Result, Arg>
-    {
-        static_assert(!std::is_fundamental_v<Result>, "Result type cannot be a C++ fundamental type for an object-to-object Java function.");
-        static_assert(!std::is_fundamental_v<Arg>, "Argument type cannot be a C++ fundamental type for an object-to-object Java function.");
-
-        using native_type = std::function<Result(Arg)>;
-        using java_type = typename ArgType<Arg>::type::java_type;
-
-        constexpr static std::string_view class_name = "java.util.function.Function";
-        constexpr static std::string_view sig = "Ljava/util/function/Function;";
-
-        constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Ljava/lang/Object;";
-
-    public:
-        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, java_type val)
-        {
-            // Java `Function` interface has an `apply` method that takes and returns Object instances;
-            return env->CallObjectMethod(fn, m, LocalObjectRef(env, val).ref());
-        }
-    };
-
-    template <typename Result>
-    struct JavaIntFunctionType : JavaFunctionBase<JavaIntFunctionType<Result>, Result, int32_t>
-    {
-        using native_type = std::function<Result(int32_t)>;
-
-        constexpr static std::string_view class_name = "java.util.function.IntFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/IntFunction;";
-
-        constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(I)Ljava/lang/Object;";
-
-    public:
-        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jint val)
-        {
-            return env->CallObjectMethod(fn, m, val);
-        }
-    };
-
-    template <typename Result>
-    struct JavaLongFunctionType : JavaFunctionBase<JavaLongFunctionType<Result>, Result, int64_t>
-    {
-        using native_type = std::function<Result(int64_t)>;
-
-        constexpr static std::string_view class_name = "java.util.function.LongFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/LongFunction;";
-
-        constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(J)Ljava/lang/Object;";
-
-    public:
-        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
-        {
-            return env->CallObjectMethod(fn, m, val);
-        }
-    };
-
-    template <typename Result>
-    struct JavaDoubleFunctionType : JavaFunctionBase<JavaDoubleFunctionType<Result>, Result, double>
-    {
-        using native_type = std::function<Result(double)>;
-
-        constexpr static std::string_view class_name = "java.util.function.DoubleFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/DoubleFunction;";
-
-        constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(D)Ljava/lang/Object;";
-
-    public:
-        static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jdouble val)
-        {
-            return env->CallObjectMethod(fn, m, val);
-        }
-    };
-
-    template <typename Arg>
-    struct JavaToIntFunctionType : JavaFunctionBase<JavaToIntFunctionType<Arg>, int32_t, Arg>
-    {
-        using native_type = std::function<int32_t(Arg)>;
-
-        constexpr static std::string_view class_name = "java.util.function.ToIntFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/ToIntFunction;";
-
-        constexpr static std::string_view apply_fn = "applyAsInt";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)I";
-
-    public:
-        static jint native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
-        {
-            return env->CallIntMethod(fn, m, val);
-        }
-    };
-
-    template <typename Arg>
-    struct JavaToLongFunctionType : JavaFunctionBase<JavaToLongFunctionType<Arg>, int64_t, Arg>
-    {
-        using native_type = std::function<int64_t(Arg)>;
-
-        constexpr static std::string_view class_name = "java.util.function.ToLongFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/ToLongFunction;";
-
-        constexpr static std::string_view apply_fn = "applyAsLong";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)J";
-
-    public:
-        static jlong native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
-        {
-            return env->CallLongMethod(fn, m, val);
-        }
-    };
-
-    template <typename Arg>
-    struct JavaToDoubleFunctionType : JavaFunctionBase<JavaToDoubleFunctionType<Arg>, double, Arg>
-    {
-        using native_type = std::function<double(Arg)>;
-
-        constexpr static std::string_view class_name = "java.util.function.ToDoubleFunction";
-        constexpr static std::string_view sig = "Ljava/util/function/ToDoubleFunction;";
-
-        constexpr static std::string_view apply_fn = "applyAsDouble";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)D";
-
-    public:
-        static jdouble native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
-        {
-            return env->CallDoubleMethod(fn, m, val);
         }
     };
 }

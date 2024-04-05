@@ -236,6 +236,10 @@ namespace javabind
     class LocalClassRef
     {
     public:
+        LocalClassRef(JNIEnv* env, const std::string_view& name)
+            : LocalClassRef(env, name.data())
+        {}
+
         LocalClassRef(JNIEnv* env, const char* name)
             : LocalClassRef(env, name, std::nothrow)
         {
@@ -243,6 +247,10 @@ namespace javabind
                 throw JavaException(env);  // Java class not found
             }
         }
+
+        LocalClassRef(JNIEnv* env, const std::string_view& name, std::nothrow_t)
+            : LocalClassRef(env, name.data(), std::nothrow)
+        {}
 
         LocalClassRef(JNIEnv* env, const char* name, std::nothrow_t)
             : _env(env)

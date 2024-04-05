@@ -1,7 +1,14 @@
 {
     "cSpell.words": [
         "javabind",
-        "Levente"
+        "jdouble",
+        "jint",
+        "jlong",
+        "jmethod",
+        "jobject",
+        "jstring",
+        "Levente",
+        "Ljava"
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "C_Cpp.default.cppStandard": "c++17",

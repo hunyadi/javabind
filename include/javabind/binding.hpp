@@ -11,6 +11,7 @@
 #pragma once
 
 #include "class.hpp"
+#include "function.hpp"
 #include "record.hpp"
 #include "type.hpp"
 
@@ -50,6 +51,7 @@ namespace javabind
     template <> struct ArgType<std::string> { using type = JavaStringType; };
     template <typename T> struct ArgType<T*> { using type = JavaPointerType<T>; };
     template <typename T> struct ArgType<boxed<T>> { using type = JavaBoxedType<typename ArgType<T>::type>; };
+    template <> struct ArgType<object> { using type = JavaObjectType; };
 
     template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };
     template <typename T> struct ArgType<std::vector<T>> { using type = JavaArrayType<T>; };
@@ -120,7 +122,7 @@ namespace javabind
             try {
                 if constexpr (!std::is_same_v<result_type, void>) {
                     auto&& result = func(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
-                    return ArgType<result_type>::type::java_value(env, std::move(result));
+                    return static_cast<java_t<result_type>>(ArgType<result_type>::type::java_value(env, std::move(result)));
                 }
                 else {
                     func(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
@@ -158,7 +160,7 @@ namespace javabind
             try {
                 // look up field that stores native pointer
                 LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig.data());
+                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
                 T* ptr = ArgType<T*>::type::native_field_value(env, obj, field);
 
                 // invoke native function
@@ -226,7 +228,7 @@ namespace javabind
                 }
 
                 // store native pointer in Java object field
-                Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig.data());
+                Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig);
                 ArgType<T*>::type::java_set_field_value(env, obj, field, ptr);
 
                 return obj;
@@ -252,7 +254,7 @@ namespace javabind
             try {
                 // look up field that stores native pointer
                 LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig.data());
+                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
                 T* ptr = ArgType<T*>::type::native_field_value(env, obj, field);
 
                 // release native object

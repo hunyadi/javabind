@@ -27,7 +27,7 @@ namespace javabind
         {
             // look up field that stores native pointer
             LocalClassRef cls(env, obj);
-            Field field = cls.getField("nativePointer", ArgType<T*>::type::sig.data());
+            Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
             T* ptr = ArgType<T*>::native_field_value(env, obj, field);
             return *ptr;
         }
@@ -38,14 +38,14 @@ namespace javabind
             T* ptr = new T(std::forward<T>(native_object));
 
             // instantiate Java object by skipping constructor
-            LocalClassRef objClass(env, ClassTraits<T>::class_name.data());
+            LocalClassRef objClass(env, ClassTraits<T>::class_name);
             jobject obj = env->AllocObject(objClass.ref());
             if (obj == nullptr) {
                 throw JavaException(env);
             }
 
             // store native pointer in Java object field
-            Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig.data());
+            Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig);
             ArgType<T*>::java_set_field_value(env, obj, field, ptr);
 
             return obj;
