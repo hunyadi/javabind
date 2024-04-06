@@ -10,9 +10,8 @@
 
 #pragma once
 #include "local.hpp"
-#include "function.hpp"
+#include "argtype.hpp"
 #include "exception.hpp"
-#include "signature.hpp"
 #include "message.hpp"
 
 namespace javabind
@@ -56,18 +55,19 @@ namespace javabind
     };
 
     template <typename R, typename T>
-    static jint register_callback(JNIEnv* env, const std::string_view& name, const std::string_view function_name)
+    static jint register_callback(JNIEnv* env)
     {
-        std::string class_path = std::string("hu/info/hunyadi/javabind/") + std::string(name);
-        LocalClassRef cls(env, class_path.data(), std::nothrow);
+        using callback_type = typename ArgType<std::function<R(T)>>::type;
+
+        LocalClassRef cls(env, callback_type::native_class_path, std::nothrow);
         if (cls.ref() == nullptr) {
-            javabind::throw_exception(env, msg() << "Cannot find Java class definition for native callback function: " << class_path);
+            javabind::throw_exception(env, msg() << "Cannot find Java class definition for native callback function: " << callback_type::native_class_path);
             return JNI_ERR;
         }
         JNINativeMethod methods[] = {
             {
-                const_cast<char*>(function_name.data()),
-                const_cast<char*>(FunctionTraits<R(T)>::sig.data()),
+                const_cast<char*>(callback_type::apply_fn.data()),
+                const_cast<char*>(callback_type::apply_sig.data()),
                 reinterpret_cast<void*>(CallbackHandler<R, T>::invoke)
             },
             {

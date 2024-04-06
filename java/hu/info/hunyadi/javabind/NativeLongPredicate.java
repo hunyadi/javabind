@@ -11,12 +11,12 @@
 package hu.info.hunyadi.javabind;
 
 import hu.info.hunyadi.javabind.NativeCallback;
-import java.util.function.ToLongFunction;
+import java.util.function.LongPredicate;
 
 /**
- * Represents an object that wraps a native object-to-long callback function.
+ * Represents an object that wraps a native object-to-boolean callback function.
  */
-public final class NativeToLongFunction<T> extends NativeCallback implements ToLongFunction<T> {
-    public native long applyAsLong(T value);
+public final class NativeLongPredicate extends NativeCallback implements LongPredicate {
+    public native boolean test(long value);
     public native void close();
 }

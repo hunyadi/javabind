@@ -10,10 +10,10 @@
 
 #pragma once
 
+#include "core.hpp"
 #include "class.hpp"
-#include "function.hpp"
 #include "record.hpp"
-#include "type.hpp"
+#include "function.hpp"
 
 #include "exception.hpp"
 #include "message.hpp"
@@ -22,53 +22,6 @@
 
 namespace javabind
 {
-    /**
-     * Used in static_assert to have the type name printed in the compiler error message.
-     */
-    template <typename>
-    struct fail : std::false_type {};
-
-    /**
-     * Argument type traits, and argument type conversion between native and Java.
-     *
-     * Template substitution fails automatically unless the type is a well-known type or has been
-     * declared with DECLARE_NATIVE_CLASS or DECLARE_STATIC_CLASS.
-     */
-    template <typename T>
-    struct ArgType
-    {
-        static_assert(fail<T>::value, "Unrecognized type detected, ensure that all involved argument types have been declared as a binding type with DECLARE_*_CLASS.");
-    };
-
-    template <> struct ArgType<void> { using type = JavaVoidType; };
-    template <> struct ArgType<bool> { using type = JavaBooleanType; };
-    template <> struct ArgType<int8_t> { using type = JavaByteType; };
-    template <> struct ArgType<int16_t> { using type = JavaShortType; };
-    template <> struct ArgType<int32_t> { using type = JavaIntegerType; };
-    template <> struct ArgType<int64_t> { using type = JavaLongType; };
-    template <> struct ArgType<float> { using type = JavaFloatType; };
-    template <> struct ArgType<double> { using type = JavaDoubleType; };
-    template <> struct ArgType<std::string> { using type = JavaStringType; };
-    template <typename T> struct ArgType<T*> { using type = JavaPointerType<T>; };
-    template <typename T> struct ArgType<boxed<T>> { using type = JavaBoxedType<typename ArgType<T>::type>; };
-    template <> struct ArgType<object> { using type = JavaObjectType; };
-
-    template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };
-    template <typename T> struct ArgType<std::vector<T>> { using type = JavaArrayType<T>; };
-
-    template <typename R, typename T>
-    struct ArgType<std::function<R(T)>>
-    {
-        using type = JavaFunctionType<R, T>;
-    };
-
-    template <typename R> struct ArgType<std::function<R(int32_t)>> { using type = JavaIntFunctionType<R>; };
-    template <typename R> struct ArgType<std::function<R(int64_t)>> { using type = JavaLongFunctionType<R>; };
-    template <typename R> struct ArgType<std::function<R(double)>> { using type = JavaDoubleFunctionType<R>; };
-    template <typename T> struct ArgType<std::function<int32_t(T)>> { using type = JavaToIntFunctionType<T>; };
-    template <typename T> struct ArgType<std::function<int64_t(T)>> { using type = JavaToLongFunctionType<T>; };
-    template <typename T> struct ArgType<std::function<double(T)>> { using type = JavaToDoubleFunctionType<T>; };
-
     /**
      * Declares a class to serve as a data transfer type.
      * Record classes marshal data between native and Java code with copy semantics.

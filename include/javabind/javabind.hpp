@@ -43,25 +43,49 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
         initializer();
 
         // register callback bindings
-        rc = register_callback<object, object>(env, "NativeFunction", "apply");
+        rc = register_callback<bool, object>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<object, int32_t>(env, "NativeIntFunction", "apply");
+        rc = register_callback<bool, int32_t>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<object, int64_t>(env, "NativeLongFunction", "apply");
+        rc = register_callback<bool, int64_t>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<object, double>(env, "NativeDoubleFunction", "apply");
+        rc = register_callback<bool, double>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<int32_t, object>(env, "NativeToIntFunction", "applyAsInt");
+        rc = register_callback<object, object>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<int64_t, object>(env, "NativeToLongFunction", "applyAsLong");
+        rc = register_callback<object, int32_t>(env);
         if (rc != JNI_OK)
             return rc;
-        rc = register_callback<double, object>(env, "NativeToDoubleFunction", "applyAsDouble");
+        rc = register_callback<object, int64_t>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<object, double>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<int32_t, object>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<int64_t, object>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<double, object>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<bool, object>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<bool, int32_t>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<bool, int64_t>(env);
+        if (rc != JNI_OK)
+            return rc;
+        rc = register_callback<bool, double>(env);
         if (rc != JNI_OK)
             return rc;
 

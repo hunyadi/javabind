@@ -9,15 +9,13 @@
  */
 
 #pragma once
+#include "argtype.hpp"
 #include "local.hpp"
 #include "global.hpp"
 #include <functional>
 
 namespace javabind
 {
-    template <typename T>
-    struct ArgType;
-
     template<typename java_result_type, typename java_arg_type>
     struct NativeCallback
     {
@@ -99,7 +97,7 @@ namespace javabind
             using callback_type = NativeCallback<java_result_type, java_arg_type>;
 
             // look up class that wraps native callbacks
-            LocalClassRef cls(env, WrapperType::fn_class_path);
+            LocalClassRef cls(env, WrapperType::native_class_path);
 
             // instantiate Java object by skipping constructor
             jobject obj = env->AllocObject(cls.ref());
@@ -118,6 +116,79 @@ namespace javabind
         }
     };
 
+    template <typename Arg>
+    struct JavaPredicateType : JavaFunctionBase<JavaPredicateType<Arg>, bool, Arg>
+    {
+        using native_type = std::function<bool(Arg)>;
+
+        constexpr static std::string_view class_name = "java.util.function.Predicate";
+        constexpr static std::string_view sig = "Ljava/util/function/Predicate;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativePredicate";
+
+        constexpr static std::string_view apply_fn = "test";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Z";
+
+    public:
+        static jboolean native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
+        {
+            return env->CallBooleanMethod(fn, m, val);
+        }
+    };
+
+    struct JavaIntPredicateType : JavaFunctionBase<JavaIntPredicateType, bool, int32_t>
+    {
+        using native_type = std::function<bool(int32_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.IntPredicate";
+        constexpr static std::string_view sig = "Ljava/util/function/IntPredicate;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntPredicate";
+
+        constexpr static std::string_view apply_fn = "test";
+        constexpr static std::string_view apply_sig = "(I)Z";
+
+    public:
+        static jboolean native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
+        {
+            return env->CallBooleanMethod(fn, m, val);
+        }
+    };
+
+    struct JavaLongPredicateType : JavaFunctionBase<JavaLongPredicateType, bool, int64_t>
+    {
+        using native_type = std::function<bool(int64_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.LongPredicate";
+        constexpr static std::string_view sig = "Ljava/util/function/LongPredicate;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongPredicate";
+
+        constexpr static std::string_view apply_fn = "test";
+        constexpr static std::string_view apply_sig = "(J)Z";
+
+    public:
+        static jboolean native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
+        {
+            return env->CallBooleanMethod(fn, m, val);
+        }
+    };
+
+    struct JavaDoublePredicateType : JavaFunctionBase<JavaDoublePredicateType, bool, double>
+    {
+        using native_type = std::function<bool(double)>;
+
+        constexpr static std::string_view class_name = "java.util.function.DoublePredicate";
+        constexpr static std::string_view sig = "Ljava/util/function/DoublePredicate;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoublePredicate";
+
+        constexpr static std::string_view apply_fn = "test";
+        constexpr static std::string_view apply_sig = "(D)Z";
+
+    public:
+        static jboolean native_invoke(JNIEnv* env, jobject fn, jmethodID m, jdouble val)
+        {
+            return env->CallBooleanMethod(fn, m, val);
+        }
+    };
+
     template <typename Result, typename Arg>
     struct JavaFunctionType : JavaFunctionBase<JavaFunctionType<Result, Arg>, Result, Arg>
     {
@@ -129,7 +200,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.Function";
         constexpr static std::string_view sig = "Ljava/util/function/Function;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeFunction";
 
         constexpr static std::string_view apply_fn = "apply";
         constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Ljava/lang/Object;";
@@ -149,7 +220,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.IntFunction";
         constexpr static std::string_view sig = "Ljava/util/function/IntFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeIntFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntFunction";
 
         constexpr static std::string_view apply_fn = "apply";
         constexpr static std::string_view apply_sig = "(I)Ljava/lang/Object;";
@@ -168,7 +239,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.LongFunction";
         constexpr static std::string_view sig = "Ljava/util/function/LongFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeLongFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongFunction";
 
         constexpr static std::string_view apply_fn = "apply";
         constexpr static std::string_view apply_sig = "(J)Ljava/lang/Object;";
@@ -187,7 +258,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.DoubleFunction";
         constexpr static std::string_view sig = "Ljava/util/function/DoubleFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeDoubleFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoubleFunction";
 
         constexpr static std::string_view apply_fn = "apply";
         constexpr static std::string_view apply_sig = "(D)Ljava/lang/Object;";
@@ -206,7 +277,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.ToIntFunction";
         constexpr static std::string_view sig = "Ljava/util/function/ToIntFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeToIntFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToIntFunction";
 
         constexpr static std::string_view apply_fn = "applyAsInt";
         constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)I";
@@ -225,7 +296,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.ToLongFunction";
         constexpr static std::string_view sig = "Ljava/util/function/ToLongFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeToLongFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToLongFunction";
 
         constexpr static std::string_view apply_fn = "applyAsLong";
         constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)J";
@@ -244,7 +315,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = "java.util.function.ToDoubleFunction";
         constexpr static std::string_view sig = "Ljava/util/function/ToDoubleFunction;";
-        constexpr static std::string_view fn_class_path = "hu/info/hunyadi/javabind/NativeToDoubleFunction";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToDoubleFunction";
 
         constexpr static std::string_view apply_fn = "applyAsDouble";
         constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)D";
@@ -255,4 +326,22 @@ namespace javabind
             return env->CallDoubleMethod(fn, m, val);
         }
     };
+
+    template <typename R, typename T>
+    struct ArgType<std::function<R(T)>>
+    {
+        using type = JavaFunctionType<R, T>;
+    };
+
+    template <typename T> struct ArgType<std::function<bool(T)>> { using type = JavaPredicateType<T>; };
+    template <> struct ArgType<std::function<bool(int32_t)>> { using type = JavaIntPredicateType; };
+    template <> struct ArgType<std::function<bool(int64_t)>> { using type = JavaLongPredicateType; };
+    template <> struct ArgType<std::function<bool(double)>> { using type = JavaDoublePredicateType; };
+
+    template <typename R> struct ArgType<std::function<R(int32_t)>> { using type = JavaIntFunctionType<R>; };
+    template <typename R> struct ArgType<std::function<R(int64_t)>> { using type = JavaLongFunctionType<R>; };
+    template <typename R> struct ArgType<std::function<R(double)>> { using type = JavaDoubleFunctionType<R>; };
+    template <typename T> struct ArgType<std::function<int32_t(T)>> { using type = JavaToIntFunctionType<T>; };
+    template <typename T> struct ArgType<std::function<int64_t(T)>> { using type = JavaToLongFunctionType<T>; };
+    template <typename T> struct ArgType<std::function<double(T)>> { using type = JavaToDoubleFunctionType<T>; };
 }

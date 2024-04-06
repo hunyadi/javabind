@@ -9,8 +9,9 @@
  */
 
 #pragma once
+#include "argtype.hpp"
 #include "local.hpp"
-#include <string_view>
+#include "string.hpp"
 #include <vector>
 
 namespace javabind
@@ -130,7 +131,7 @@ namespace javabind
             return env->GetByteField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int8_t value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetByteField(obj, fld.ref(), java_value(env, value));
         }
@@ -156,6 +157,46 @@ namespace javabind
         }
     };
 
+    struct JavaCharacterType : PrimitiveJavaType<JavaCharacterType, char16_t, jchar>
+    {
+        constexpr static std::string_view class_name = "java.lang.Character";
+        constexpr static std::string_view primitive_name = "char";
+        constexpr static std::string_view sig = "C";
+
+        using native_type = char16_t;
+        using java_type = jchar;
+
+        static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
+        {
+            return env->GetCharField(obj, fld.ref());
+        }
+
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
+        {
+            env->SetCharField(obj, fld.ref(), java_value(env, value));
+        }
+
+        static java_type java_call(JNIEnv* env, jobject obj, Method& m)
+        {
+            return env->CallCharMethod(obj, m.ref());
+        }
+
+        static void native_array_value(JNIEnv* env, jarray arr, native_type* ptr, std::size_t len)
+        {
+            env->GetCharArrayRegion(static_cast<jcharArray>(arr), 0, static_cast<jsize>(len), reinterpret_cast<jchar*>(ptr));
+        }
+
+        static jarray java_array_value(JNIEnv* env, const native_type* ptr, std::size_t len)
+        {
+            jcharArray arr = env->NewCharArray(static_cast<jsize>(len));
+            if (arr == nullptr) {
+                throw JavaException(env);
+            }
+            env->SetCharArrayRegion(arr, 0, static_cast<jsize>(len), reinterpret_cast<const jchar*>(ptr));
+            return arr;
+        }
+    };
+
     struct JavaShortType : PrimitiveJavaType<JavaShortType, int16_t, jshort>
     {
         constexpr static std::string_view class_name = "java.lang.Short";
@@ -170,7 +211,7 @@ namespace javabind
             return env->GetShortField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int16_t value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetShortField(obj, fld.ref(), java_value(env, value));
         }
@@ -210,7 +251,7 @@ namespace javabind
             return env->GetIntField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int32_t value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetIntField(obj, fld.ref(), java_value(env, value));
         }
@@ -250,7 +291,7 @@ namespace javabind
             return env->GetLongField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, int value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetLongField(obj, fld.ref(), java_value(env, value));
         }
@@ -290,7 +331,7 @@ namespace javabind
             return env->GetFloatField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, float value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetFloatField(obj, fld.ref(), java_value(env, value));
         }
@@ -330,7 +371,7 @@ namespace javabind
             return env->GetDoubleField(obj, fld.ref());
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, double value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             env->SetDoubleField(obj, fld.ref(), java_value(env, value));
         }
@@ -584,4 +625,21 @@ namespace javabind
             return arr;
         }
     };
+
+    template <> struct ArgType<void> { using type = JavaVoidType; };
+    template <> struct ArgType<bool> { using type = JavaBooleanType; };
+    template <> struct ArgType<int8_t> { using type = JavaByteType; };
+    template <> struct ArgType<char16_t> { using type = JavaCharacterType; };
+    template <> struct ArgType<int16_t> { using type = JavaShortType; };
+    template <> struct ArgType<int32_t> { using type = JavaIntegerType; };
+    template <> struct ArgType<int64_t> { using type = JavaLongType; };
+    template <> struct ArgType<float> { using type = JavaFloatType; };
+    template <> struct ArgType<double> { using type = JavaDoubleType; };
+    template <> struct ArgType<std::string> { using type = JavaStringType; };
+    template <typename T> struct ArgType<T*> { using type = JavaPointerType<T>; };
+    template <typename T> struct ArgType<boxed<T>> { using type = JavaBoxedType<typename ArgType<T>::type>; };
+    template <> struct ArgType<object> { using type = JavaObjectType; };
+
+    template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };
+    template <typename T> struct ArgType<std::vector<T>> { using type = JavaArrayType<T>; };
 }

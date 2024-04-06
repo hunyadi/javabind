@@ -55,7 +55,7 @@ namespace javabind
         {
             LocalClassRef objClass(env, obj);
 
-            T native_object;
+            T native_object = T();
             auto&& bindings = FieldBindings::value[sig];
             for (auto&& binding : bindings) {
                 Field fld = objClass.getField(binding.name, binding.signature);

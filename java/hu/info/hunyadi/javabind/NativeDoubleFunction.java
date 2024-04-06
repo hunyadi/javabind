@@ -1,20 +1,22 @@
+/**
+ * javabind: effective C++ and Java interoperability
+ * @see https://github.com/hunyadi/javabind
+ *
+ * Copyright (c) 2024 Levente Hunyadi
+ *
+ * This work is licensed under the terms of the MIT license.
+ * For a copy, see <https://opensource.org/licenses/MIT>.
+ */
+
 package hu.info.hunyadi.javabind;
 
+import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.DoubleFunction;
 
 /**
- * Represents an object that wraps a native callback function.
+ * Represents an object that wraps a native object-to-double callback function.
  */
-public final class NativeDoubleFunction<R> implements AutoCloseable, DoubleFunction<R> {
-    protected NativeDoubleFunction() {}
-
-    private long nativePointer = 0;
-
+public final class NativeDoubleFunction<R> extends NativeCallback implements DoubleFunction<R> {
     public native R apply(double value);
-
     public native void close();
-
-    protected void finalize() {
-        close();
-    }
 }

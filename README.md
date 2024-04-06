@@ -10,6 +10,7 @@ The following C++ features can be mapped to Java:
 
 * Fundamental types and custom data structures as function arguments or return values
 * Instance methods and static methods
+* Functions with template parameters
 * Overloaded functions
 * Operators
 * Instance attributes and static attributes
@@ -145,7 +146,7 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `void` | n/a | `void` |
 | `bool` | `boolean` | `boolean` |
 | `int8_t` | `byte` | `byte` |
-| `uint16_t` | `char` | `char` |
+| `char16_t` | `char` | `char` |
 | `int16_t` | `short` | `short` |
 | `int32_t` | `int` | `int` |
 | `int64_t` | `long` | `long` |
@@ -154,7 +155,7 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::string` (UTF-8) | `String` | `String` |
 | `boxed<bool>` | `Boolean` | `Boolean` |
 | `boxed<int8_t>` | `Byte` | `Byte` |
-| `boxed<uint16_t>` | `Character` | `Character` |
+| `boxed<char16_t>` | `Character` | `Character` |
 | `boxed<int16_t>` | `Short` | `Short` |
 | `boxed<int32_t>` | `Integer` | `Integer` |
 | `boxed<int64_t>` | `Long` | `Long` |
@@ -167,13 +168,17 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::unordered_set<E>` | `java.util.Set<E>` | `java.util.HashSet<E>` |
 | `std::map<K,V>` | `java.util.Map<K,V>` | `java.util.TreeMap<K,V>` |
 | `std::unordered_map<K,V>` | `java.util.Map<K,V>` | `java.util.HashMap<K,V>` |
-| `std::function<R(T)>` | `java.util.function.Function<T,R>` | n/a |
-| `std::function<R(int)>` | `java.util.function.IntFunction<R>` | n/a |
-| `std::function<R(long)>` | `java.util.function.LongFunction<R>` | n/a |
-| `std::function<R(double)>` | `java.util.function.DoubleFunction<R>` | n/a |
-| `std::function<int(T)>` | `java.util.function.ToIntFunction<T>` | n/a |
-| `std::function<long(T)>` | `java.util.function.ToLongFunction<T>` | n/a |
-| `std::function<double(T)>` | `java.util.function.ToDoubleFunction<T>` | n/a |
+| `std::function<R(T)>` | `Function<T,R>` | `NativeFunction<T,R>` implements `Function<T,R>` |
+| `std::function<R(int32_t)>` | `IntFunction<R>` | `NativeIntFunction<R>` implements `IntFunction<R>` |
+| `std::function<R(int64_t)>` | `LongFunction<R>` | `NativeLongFunction<R>` implements `LongFunction<R>` |
+| `std::function<R(double)>` | `DoubleFunction<R>` | `NativeDoubleFunction<R>` implements `DoubleFunction<R>` |
+| `std::function<int32_t(T)>` | `ToIntFunction<T>` | `NativeToIntFunction<T>` implements `ToIntFunction<T>` |
+| `std::function<int64_t(T)>` | `ToLongFunction<T>` | `NativeToLongFunction<T>` implements `ToLongFunction<T>` |
+| `std::function<double(T)>` | `ToDoubleFunction<T>` | `NativeToDoubleFunction<T>` implements `ToDoubleFunction<T>` |
+| `std::function<bool(T)>` | `Predicate<T>` | `NativePredicate<T>` implements `Predicate<T>` |
+| `std::function<bool(int32_t)>` | `IntPredicate` | `NativeIntPredicate` implements `IntPredicate` |
+| `std::function<bool(int64_t)>` | `LongPredicate` | `NativeLongPredicate` implements `LongPredicate` |
+| `std::function<bool(double)>` | `DoublePredicate` | `NativeDoublePredicate` implements `DoublePredicate` |
 
 `boxed` is a lightweight C++ wrapper defined by the library to match Java boxed types such as `java.lang.Integer`. `boxed` has no C++ run-time overhead, it is only used for disambiguation.
 
@@ -203,12 +208,12 @@ These definitions, in turn, iterate over the function and field bindings registe
 Each function binding generates a function pointer at compile time, which are passed to the JNI function `RegisterNatives`. Each of these function pointers points at a static member function of a template class, where the template parameters capture the type information extracted from the function signature. When the function is invoked through the pointer, the function makes the appropriate type conversions to cast Java types into C++ types and back. For example, the C++ function signature
 
 ```cpp
-bool func(const std::string& str, const std::vector<int>& vec, double d);
+bool func(const std::string& str, const std::vector<int32_t>& vec, double d);
 ```
 
-causes the function adapter template to be instantiated with parameter types `std::string`, `std::vector<int>` and `double` and return type `bool`. When Java calls the pointer through JNI, the adapter transforms the types `std::string` and `std::vector<int>`. (`double` and `bool` need no transformation.) For each transformed type, a temporary object is created, all of which are then used in invoking the original function `func`.
+causes the function adapter template to be instantiated with parameter types `std::string`, `std::vector<int32_t>` and `double` and return type `bool`. When Java calls the pointer through JNI, the adapter transforms the types `std::string` and `std::vector<int32_t>`. (`double` and `bool` need no transformation.) For each transformed type, a temporary object is created, all of which are then used in invoking the original function `func`.
 
 Internally, field bindings utilize JNI accessor functions like `GetObjectField` and `SetObjectField` to extract and populate Java objects. Like with function bindings, javabind uses C++ type information to make the appropriate JNI function call. For instance, setting a field with type `double` entails a call to `GetDoubleField` (from Java to C++) or `SetDoubleField` (from C++ to Java). If the type is a composite type, such as a `std::vector<T>`, then a Java object is constructed recursively, and then set with `SetObjectField`. For example,
 
-* Setting a field of type `std::list<int>` first creates a `java.util.ArrayList` with JNI's `NewObject`, then sets elements with the `add` method (invoked using JNI's `CallBooleanMethod`), performing boxing for the primitive type `int` with `valueOf`, and finally uses `SetObjectField` with the newly created `java.util.ArrayList` instance.
+* Setting a field of type `std::list<int32_t>` first creates a `java.util.ArrayList` with JNI's `NewObject`, then sets elements with the `add` method (invoked using JNI's `CallBooleanMethod`), performing boxing for the primitive type `int` with `valueOf`, and finally uses `SetObjectField` with the newly created `java.util.ArrayList` instance.
 * Setting an `std::vector<std::string>` field involves creating a `java.util.ArrayList` with JNI's `NewObject`, and a call to JNI's `NewStringUTF` for each string element. The strings are then added to the `java.util.ArrayList` instance with `add`, and finally to the field with `SetObjectField`.

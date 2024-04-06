@@ -1,31 +1,22 @@
+/**
+ * javabind: effective C++ and Java interoperability
+ * @see https://github.com/hunyadi/javabind
+ *
+ * Copyright (c) 2024 Levente Hunyadi
+ *
+ * This work is licensed under the terms of the MIT license.
+ * For a copy, see <https://opensource.org/licenses/MIT>.
+ */
+
 package hu.info.hunyadi.javabind;
 
+import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.Function;
 
 /**
- * Represents an object that wraps a native callback function.
+ * Represents an object that wraps a native object-to-object callback function.
  */
-public final class NativeFunction<T, R> implements AutoCloseable, Function<T, R> {
-    /**
-     * Prevents this class from being constructed directly in Java.
-     *
-     * The native pointer member is assigned in native code via a factory function.
-     */
-    protected NativeFunction() {}
-
-    /**
-     * Holds an opaque reference to an object that exists in the native code execution context.
-     */
-    private long nativePointer = 0;
-
+public final class NativeFunction<T, R> extends NativeCallback implements Function<T, R> {
     public native R apply(T t);
-
-    /**
-     * Disposes of objects allocated in the native code execution context.
-     */
     public native void close();
-
-    protected void finalize() {
-        close();
-    }
 }

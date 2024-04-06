@@ -51,6 +51,17 @@ struct Rectangle
     double height = 0.0;
 };
 
+struct PrimitiveRecord
+{
+    int8_t byte_value;
+    char16_t char_value;
+    int16_t short_value;
+    int32_t int_value;
+    int64_t long_value;
+    float float_value;
+    double double_value;
+};
+
 struct Sample
 {
     static void returns_void()
@@ -109,45 +120,10 @@ struct StaticSample
         return "a sample string";
     }
 
-    static bool pass_bool(bool value)
+    template <typename T>
+    static T pass_value(T value)
     {
-        JAVA_OUTPUT << "pass_bool(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static int8_t pass_byte(int8_t value)
-    {
-        JAVA_OUTPUT << "pass_byte(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static int16_t pass_short(int16_t value)
-    {
-        JAVA_OUTPUT << "pass_short(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static int32_t pass_int(int32_t value)
-    {
-        JAVA_OUTPUT << "pass_int(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static int64_t pass_long(int64_t value)
-    {
-        JAVA_OUTPUT << "pass_long(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static float pass_float(float value)
-    {
-        JAVA_OUTPUT << "pass_float(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static double pass_double(double value)
-    {
-        JAVA_OUTPUT << "pass_double(" << value << ")" << std::endl;
+        JAVA_OUTPUT << "pass_value(" << value << ")" << std::endl;
         return value;
     }
 
@@ -157,58 +133,18 @@ struct StaticSample
         return value;
     }
 
-    static javabind::boxed<bool> pass_boxed_boolean(javabind::boxed<bool> value)
+    template <typename T>
+    static javabind::boxed<T> pass_boxed(javabind::boxed<T> value)
     {
-        JAVA_OUTPUT << "pass_boxed_boolean(" << value << ")" << std::endl;
+        JAVA_OUTPUT << "pass_boxed(" << value << ")" << std::endl;
         return value;
     }
 
-    static javabind::boxed<int32_t> pass_boxed_integer(javabind::boxed<int32_t> value)
+    template <typename T>
+    static std::vector<T> pass_array(const std::vector<T>& values)
     {
-        JAVA_OUTPUT << "pass_boxed_integer(" << value << ")" << std::endl;
-        return value;
-    }
-
-    static std::vector<bool> pass_bool_array(const std::vector<bool>& values)
-    {
-        JAVA_OUTPUT << "pass_bool_array(" << values << ")" << std::endl;
-        return std::vector<bool>(values.begin(), values.end());
-    }
-
-    static std::vector<int8_t> pass_byte_array(const std::vector<int8_t>& values)
-    {
-        JAVA_OUTPUT << "pass_byte_array(" << values << ")" << std::endl;
-        return std::vector<int8_t>(values.begin(), values.end());
-    }
-
-    static std::vector<int16_t> pass_short_array(const std::vector<int16_t>& values)
-    {
-        JAVA_OUTPUT << "pass_short_array(" << values << ")" << std::endl;
-        return std::vector<int16_t>(values.begin(), values.end());
-    }
-
-    static std::vector<int32_t> pass_int_array(const std::vector<int32_t>& values)
-    {
-        JAVA_OUTPUT << "pass_int_array(" << values << ")" << std::endl;
-        return std::vector<int32_t>(values.begin(), values.end());
-    }
-
-    static std::vector<int64_t> pass_long_array(const std::vector<int64_t>& values)
-    {
-        JAVA_OUTPUT << "pass_long_array(" << values << ")" << std::endl;
-        return std::vector<int64_t>(values.begin(), values.end());
-    }
-
-    static std::vector<float> pass_float_array(const std::vector<float>& values)
-    {
-        JAVA_OUTPUT << "pass_float_array(" << values << ")" << std::endl;
-        return std::vector<float>(values.begin(), values.end());
-    }
-
-    static std::vector<double> pass_double_array(const std::vector<double>& values)
-    {
-        JAVA_OUTPUT << "pass_double_array(" << values << ")" << std::endl;
-        return std::vector<double>(values.begin(), values.end());
+        JAVA_OUTPUT << "pass_array(" << values << ")" << std::endl;
+        return std::vector<T>(values.begin(), values.end());
     }
 
     static std::string pass_function(const std::string& str, const std::function<std::string(std::string)>& fn)
@@ -238,39 +174,24 @@ struct StaticSample
             };
     }
 
-    static std::string apply_int_to_string_function(int32_t val, const std::function<std::string(int32_t)>& fn)
+    template <typename T>
+    static bool apply_predicate(T val, const std::function<bool(T)>& fn)
     {
-        JAVA_OUTPUT << "apply_int_to_string_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_predicate(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static std::string apply_long_to_string_function(int64_t val, const std::function<std::string(int64_t)>& fn)
+    template <typename T>
+    static std::string apply_to_string_function(T val, const std::function<std::string(T)>& fn)
     {
-        JAVA_OUTPUT << "apply_long_to_string_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_to_string_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
-    static std::string apply_double_to_string_function(double val, const std::function<std::string(double)>& fn)
+    template <typename R>
+    static R apply_from_string_function(const std::string& val, const std::function<R(std::string)>& fn)
     {
-        JAVA_OUTPUT << "apply_double_to_string_function(" << val << ")" << std::endl;
-        return fn(val);
-    }
-
-    static int32_t apply_string_to_int_function(const std::string& val, const std::function<int32_t(std::string)>& fn)
-    {
-        JAVA_OUTPUT << "apply_string_to_int_function(" << val << ")" << std::endl;
-        return fn(val);
-    }
-
-    static int64_t apply_string_to_long_function(const std::string& val, const std::function<int64_t(std::string)>& fn)
-    {
-        JAVA_OUTPUT << "apply_string_to_long_function(" << val << ")" << std::endl;
-        return fn(val);
-    }
-
-    static double apply_string_to_double_function(const std::string& val, const std::function<double(std::string)>& fn)
-    {
-        JAVA_OUTPUT << "apply_string_to_double_function(" << val << ")" << std::endl;
+        JAVA_OUTPUT << "apply_from_string_function(" << val << ")" << std::endl;
         return fn(val);
     }
 
@@ -310,6 +231,19 @@ struct StaticSample
         JAVA_OUTPUT << "pass_record({" << rect.width << ", " << rect.height << "})" << std::endl;
         return Rectangle(2 * rect.width, 2 * rect.height);
     }
+
+    static PrimitiveRecord transform_record(const PrimitiveRecord& rec)
+    {
+        return PrimitiveRecord{
+            static_cast<int8_t>(rec.byte_value * 2),
+            rec.char_value,
+            static_cast<int16_t>(rec.short_value * 2),
+            rec.int_value * 2,
+            rec.long_value * 2l,
+            rec.float_value * 2.0f,
+            rec.double_value * 2.0
+        };
+    }
 };
 
 struct Residence
@@ -332,6 +266,7 @@ public:
 
 DECLARE_NATIVE_CLASS(Sample, "hu.info.hunyadi.test.Sample");
 DECLARE_RECORD_CLASS(Rectangle, "hu.info.hunyadi.test.Rectangle");
+DECLARE_RECORD_CLASS(PrimitiveRecord, "hu.info.hunyadi.test.PrimitiveRecord");
 DECLARE_STATIC_CLASS(StaticSample, "hu.info.hunyadi.test.StaticSample");
 
 DECLARE_NATIVE_CLASS(Person, "hu.info.hunyadi.test.Person");
@@ -344,6 +279,16 @@ JAVA_EXTENSION_MODULE()
     record_class<Rectangle>()
         .field<&Rectangle::width>("width")
         .field<&Rectangle::height>("height")
+        ;
+
+    record_class<PrimitiveRecord>()
+        .field<&PrimitiveRecord::byte_value>("byte_value")
+        .field<&PrimitiveRecord::char_value>("char_value")
+        .field<&PrimitiveRecord::short_value>("short_value")
+        .field<&PrimitiveRecord::int_value>("int_value")
+        .field<&PrimitiveRecord::long_value>("long_value")
+        .field<&PrimitiveRecord::float_value>("float_value")
+        .field<&PrimitiveRecord::double_value>("double_value")
         ;
 
     native_class<Sample>()
@@ -363,37 +308,45 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::returns_string>("returns_string")
 
         // fundamental types and simple well-known types as arguments
-        .function<StaticSample::pass_bool>("pass_bool")
-        .function<StaticSample::pass_byte>("pass_byte")
-        .function<StaticSample::pass_short>("pass_short")
-        .function<StaticSample::pass_int>("pass_int")
-        .function<StaticSample::pass_long>("pass_long")
-        .function<StaticSample::pass_float>("pass_float")
-        .function<StaticSample::pass_double>("pass_double")
+        .function<StaticSample::pass_value<bool>>("pass_bool")
+        .function<StaticSample::pass_value<int8_t>>("pass_byte")
+        .function<StaticSample::pass_value<char16_t>>("pass_char")
+        .function<StaticSample::pass_value<int16_t>>("pass_short")
+        .function<StaticSample::pass_value<int32_t>>("pass_int")
+        .function<StaticSample::pass_value<int64_t>>("pass_long")
+        .function<StaticSample::pass_value<float>>("pass_float")
+        .function<StaticSample::pass_value<double>>("pass_double")
         .function<StaticSample::pass_string>("pass_string")
 
         // boxing and unboxing
-        .function<StaticSample::pass_boxed_boolean>("pass_boxed_boolean")
-        .function<StaticSample::pass_boxed_integer>("pass_boxed_integer")
+        .function<StaticSample::pass_boxed<bool>>("pass_boxed_boolean")
+        .function<StaticSample::pass_boxed<int32_t>>("pass_boxed_integer")
+        .function<StaticSample::pass_boxed<int64_t>>("pass_boxed_long")
+        .function<StaticSample::pass_boxed<double>>("pass_boxed_double")
 
         // arrays as arguments and return values
-        .function<StaticSample::pass_bool_array>("pass_bool_array")
-        .function<StaticSample::pass_byte_array>("pass_byte_array")
-        .function<StaticSample::pass_short_array>("pass_short_array")
-        .function<StaticSample::pass_int_array>("pass_int_array")
-        .function<StaticSample::pass_long_array>("pass_long_array")
-        .function<StaticSample::pass_float_array>("pass_float_array")
-        .function<StaticSample::pass_double_array>("pass_double_array")
+        .function<StaticSample::pass_array<bool>>("pass_bool_array")
+        .function<StaticSample::pass_array<int8_t>>("pass_byte_array")
+        .function<StaticSample::pass_array<char16_t>>("pass_char_array")
+        .function<StaticSample::pass_array<int16_t>>("pass_short_array")
+        .function<StaticSample::pass_array<int32_t>>("pass_int_array")
+        .function<StaticSample::pass_array<int64_t>>("pass_long_array")
+        .function<StaticSample::pass_array<float>>("pass_float_array")
+        .function<StaticSample::pass_array<double>>("pass_double_array")
 
         // functional interface
         .function<StaticSample::pass_function>("pass_function")
         .function<StaticSample::returns_function>("returns_function")
-        .function<StaticSample::apply_int_to_string_function>("apply_int_to_string_function")
-        .function<StaticSample::apply_long_to_string_function>("apply_long_to_string_function")
-        .function<StaticSample::apply_double_to_string_function>("apply_double_to_string_function")
-        .function<StaticSample::apply_string_to_int_function>("apply_string_to_int_function")
-        .function<StaticSample::apply_string_to_long_function>("apply_string_to_long_function")
-        .function<StaticSample::apply_string_to_double_function>("apply_string_to_double_function")
+        .function<StaticSample::apply_predicate<int32_t>>("apply_int_predicate")
+        .function<StaticSample::apply_predicate<int64_t>>("apply_long_predicate")
+        .function<StaticSample::apply_predicate<double>>("apply_double_predicate")
+        .function<StaticSample::apply_predicate<std::string>>("apply_string_predicate")
+        .function<StaticSample::apply_to_string_function<int32_t>>("apply_int_to_string_function")
+        .function<StaticSample::apply_to_string_function<int64_t>>("apply_long_to_string_function")
+        .function<StaticSample::apply_to_string_function<double>>("apply_double_to_string_function")
+        .function<StaticSample::apply_from_string_function<int32_t>>("apply_string_to_int_function")
+        .function<StaticSample::apply_from_string_function<int64_t>>("apply_string_to_long_function")
+        .function<StaticSample::apply_from_string_function<double>>("apply_string_to_double_function")
         .function<StaticSample::get_to_string_function<int32_t>>("get_int_to_string_function")
         .function<StaticSample::get_to_string_function<int64_t>>("get_long_to_string_function")
         .function<StaticSample::get_to_string_function<double>>("get_double_to_string_function")
@@ -403,6 +356,7 @@ JAVA_EXTENSION_MODULE()
 
         // record class
         .function<StaticSample::pass_record>("pass_record")
+        .function<StaticSample::transform_record>("transform_record")
         ;
 
     native_class<Person>()
