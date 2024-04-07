@@ -49,6 +49,7 @@ namespace javabind
     {
         using native_type = T;
 
+        constexpr static std::string_view java_name = ObjectJavaType<T>::java_name;
         constexpr static std::string_view sig = ObjectJavaType<T>::sig;
 
         static T native_value(JNIEnv* env, jobject obj)

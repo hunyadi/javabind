@@ -41,6 +41,7 @@ namespace javabind
     struct JavaVoidType
     {
         constexpr static std::string_view class_name = "java.lang.Void";
+        constexpr static std::string_view java_name = "void";
         constexpr static std::string_view sig = "V";
 
         using native_type = void;
@@ -80,7 +81,7 @@ namespace javabind
     struct JavaBooleanType : PrimitiveJavaType<JavaBooleanType, bool, jboolean>
     {
         constexpr static std::string_view class_name = "java.lang.Boolean";
-        constexpr static std::string_view primitive_name = "boolean";
+        constexpr static std::string_view java_name = "boolean";
         constexpr static std::string_view sig = "Z";
 
         using native_type = bool;
@@ -120,7 +121,7 @@ namespace javabind
     struct JavaByteType : PrimitiveJavaType<JavaByteType, int8_t, jbyte>
     {
         constexpr static std::string_view class_name = "java.lang.Byte";
-        constexpr static std::string_view primitive_name = "byte";
+        constexpr static std::string_view java_name = "byte";
         constexpr static std::string_view sig = "B";
 
         using native_type = int8_t;
@@ -160,7 +161,7 @@ namespace javabind
     struct JavaCharacterType : PrimitiveJavaType<JavaCharacterType, char16_t, jchar>
     {
         constexpr static std::string_view class_name = "java.lang.Character";
-        constexpr static std::string_view primitive_name = "char";
+        constexpr static std::string_view java_name = "char";
         constexpr static std::string_view sig = "C";
 
         using native_type = char16_t;
@@ -200,7 +201,7 @@ namespace javabind
     struct JavaShortType : PrimitiveJavaType<JavaShortType, int16_t, jshort>
     {
         constexpr static std::string_view class_name = "java.lang.Short";
-        constexpr static std::string_view primitive_name = "short";
+        constexpr static std::string_view java_name = "short";
         constexpr static std::string_view sig = "S";
 
         using native_type = int16_t;
@@ -240,7 +241,7 @@ namespace javabind
     struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType, int32_t, jint>
     {
         constexpr static std::string_view class_name = "java.lang.Integer";
-        constexpr static std::string_view primitive_name = "int";
+        constexpr static std::string_view java_name = "int";
         constexpr static std::string_view sig = "I";
 
         using native_type = int32_t;
@@ -280,7 +281,7 @@ namespace javabind
     struct JavaLongType : PrimitiveJavaType<JavaLongType, int64_t, jlong>
     {
         constexpr static std::string_view class_name = "java.lang.Long";
-        constexpr static std::string_view primitive_name = "long";
+        constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";
 
         using native_type = int64_t;
@@ -320,7 +321,7 @@ namespace javabind
     struct JavaFloatType : PrimitiveJavaType<JavaFloatType, float, jfloat>
     {
         constexpr static std::string_view class_name = "java.lang.Float";
-        constexpr static std::string_view primitive_name = "float";
+        constexpr static std::string_view java_name = "float";
         constexpr static std::string_view sig = "F";
 
         using native_type = float;
@@ -360,7 +361,7 @@ namespace javabind
     struct JavaDoubleType : PrimitiveJavaType<JavaDoubleType, double, jdouble>
     {
         constexpr static std::string_view class_name = "java.lang.Double";
-        constexpr static std::string_view primitive_name = "double";
+        constexpr static std::string_view java_name = "double";
         constexpr static std::string_view sig = "D";
 
         using native_type = double;
@@ -405,7 +406,7 @@ namespace javabind
     struct JavaPointerType : PrimitiveJavaType<JavaPointerType<T>, std::intptr_t, jlong>
     {
         constexpr static std::string_view class_name = "java.lang.Long";
-        constexpr static std::string_view primitive_name = "long";
+        constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";
 
         using base_type = PrimitiveJavaType<JavaPointerType<T>, std::intptr_t, jlong>;
@@ -429,6 +430,7 @@ namespace javabind
 
         constexpr static std::string_view class_name = WrappedType::class_name;
         constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
+        constexpr static std::string_view java_name = WrappedType::class_name;
 
     private:
         constexpr static std::string_view class_type_prefix = "L";
@@ -446,7 +448,7 @@ namespace javabind
 
         /** Used in looking up the appropriate `primitiveValue()` function to fetch the primitive type (e.g. `intValue()` for `int`). */
         constexpr static std::string_view get_value_func_suffix = "Value";
-        constexpr static std::string_view get_value_func = join_v<WrappedType::primitive_name, get_value_func_suffix>;
+        constexpr static std::string_view get_value_func = join_v<WrappedType::java_name, get_value_func_suffix>;
         constexpr static std::string_view get_value_func_sig = join_v<lparen, rparen, WrappedType::sig>;
 
     public:
@@ -484,6 +486,7 @@ namespace javabind
         using java_type = jobject;
 
         constexpr static std::string_view class_name = "java.lang.Object";
+        constexpr static std::string_view java_name = "Object";
         constexpr static std::string_view sig = "Ljava/lang/Object;";
     };
 
@@ -496,6 +499,7 @@ namespace javabind
         using java_type = jstring;
 
         constexpr static std::string_view class_name = "java.lang.String";
+        constexpr static std::string_view java_name = "String";
         constexpr static std::string_view sig = "Ljava/lang/String;";
 
         static native_type native_value(JNIEnv* env, java_type value)
@@ -557,6 +561,8 @@ namespace javabind
         using java_type = jarray;
 
         constexpr static std::string_view array_type_prefix = "[";
+        constexpr static std::string_view array_type_suffix = "]";
+        constexpr static std::string_view java_name = join_v<ArgType<T>::type::java_name, array_type_prefix, array_type_suffix>;
         constexpr static std::string_view sig = join_v<array_type_prefix, ArgType<T>::type::sig>;
 
         static native_type native_value(JNIEnv* env, jarray arr)
@@ -578,6 +584,7 @@ namespace javabind
         using native_type = std::vector<bool>;
         using java_type = jarray;
 
+        constexpr static std::string_view java_name = "boolean[]";
         constexpr static std::string_view sig = "[Z";
 
         static native_type native_value(JNIEnv* env, jarray arr)

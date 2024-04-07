@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.DoubleFunction;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.DoubleFunction;
  */
 public final class NativeDoubleFunction<R> extends NativeCallback implements DoubleFunction<R> {
     public native R apply(double value);
+
     public native void close();
 }

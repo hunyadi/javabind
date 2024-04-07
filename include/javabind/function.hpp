@@ -12,6 +12,7 @@
 #include "argtype.hpp"
 #include "local.hpp"
 #include "global.hpp"
+#include "signature.hpp"
 #include <functional>
 
 namespace javabind
@@ -122,6 +123,7 @@ namespace javabind
         using native_type = std::function<bool(Arg)>;
 
         constexpr static std::string_view class_name = "java.util.function.Predicate";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/Predicate;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativePredicate";
 
@@ -140,6 +142,7 @@ namespace javabind
         using native_type = std::function<bool(int32_t)>;
 
         constexpr static std::string_view class_name = "java.util.function.IntPredicate";
+        constexpr static std::string_view java_name = class_name;
         constexpr static std::string_view sig = "Ljava/util/function/IntPredicate;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntPredicate";
 
@@ -158,6 +161,7 @@ namespace javabind
         using native_type = std::function<bool(int64_t)>;
 
         constexpr static std::string_view class_name = "java.util.function.LongPredicate";
+        constexpr static std::string_view java_name = class_name;
         constexpr static std::string_view sig = "Ljava/util/function/LongPredicate;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongPredicate";
 
@@ -176,6 +180,7 @@ namespace javabind
         using native_type = std::function<bool(double)>;
 
         constexpr static std::string_view class_name = "java.util.function.DoublePredicate";
+        constexpr static std::string_view java_name = class_name;
         constexpr static std::string_view sig = "Ljava/util/function/DoublePredicate;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoublePredicate";
 
@@ -199,6 +204,7 @@ namespace javabind
         using java_type = typename ArgType<Arg>::type::java_type;
 
         constexpr static std::string_view class_name = "java.util.function.Function";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg, Result>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/Function;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeFunction";
 
@@ -219,6 +225,7 @@ namespace javabind
         using native_type = std::function<Result(int32_t)>;
 
         constexpr static std::string_view class_name = "java.util.function.IntFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Result>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/IntFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntFunction";
 
@@ -238,6 +245,7 @@ namespace javabind
         using native_type = std::function<Result(int64_t)>;
 
         constexpr static std::string_view class_name = "java.util.function.LongFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Result>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/LongFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongFunction";
 
@@ -257,6 +265,7 @@ namespace javabind
         using native_type = std::function<Result(double)>;
 
         constexpr static std::string_view class_name = "java.util.function.DoubleFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Result>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/DoubleFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoubleFunction";
 
@@ -276,6 +285,7 @@ namespace javabind
         using native_type = std::function<int32_t(Arg)>;
 
         constexpr static std::string_view class_name = "java.util.function.ToIntFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/ToIntFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToIntFunction";
 
@@ -295,6 +305,7 @@ namespace javabind
         using native_type = std::function<int64_t(Arg)>;
 
         constexpr static std::string_view class_name = "java.util.function.ToLongFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/ToLongFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToLongFunction";
 
@@ -314,6 +325,7 @@ namespace javabind
         using native_type = std::function<double(Arg)>;
 
         constexpr static std::string_view class_name = "java.util.function.ToDoubleFunction";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/ToDoubleFunction;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToDoubleFunction";
 

@@ -20,10 +20,55 @@
 #include "message.hpp"
 #include <algorithm>
 
- /**
-  * Implements the Java [JNI_OnLoad] initialization routine.
-  * @param initializer A user-defined function where bindings are registered, e.g. with [native_class].
-  */
+namespace javabind
+{
+    /**
+     * Prints all registered Java bindings.
+     */
+    inline void print_registered_bindings() {
+        JavaOutput output(this_thread.getEnv());
+        std::ostream& os = output.stream();
+
+        // imports
+        os << "import hu.info.hunyadi.javabind.NativeObject;\n\n";
+
+        for (auto&& [class_name, bindings] : FunctionBindings::value) {
+            std::string simple_class_name;
+            std::size_t found = class_name.rfind('/');
+            if (found != std::string::npos) {
+                simple_class_name = class_name.substr(found + 1);
+            }
+            else {
+                simple_class_name = class_name;
+            }
+
+            // class definition
+            os << "public class " << simple_class_name << " extends NativeObject {\n";
+
+            // static methods
+            for (auto&& binding : bindings) {
+                if (!binding.is_member) {
+                    os << "    public static native " << binding.return_display << " " << binding.name << "(" << binding.param_display << ");\n";
+                }
+            }
+
+            // instance methods
+            for (auto&& binding : bindings) {
+                if (binding.is_member) {
+                    os << "    public native " << binding.return_display << " " << binding.name << "(" << binding.param_display << ");\n";
+                }
+            }
+
+            // end of class definition
+            os << "}\n";
+        }
+    }
+}
+
+/**
+ * Implements the Java [JNI_OnLoad] initialization routine.
+ * @param initializer A user-defined function where bindings are registered, e.g. with [native_class].
+ */
 static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
 {
     using namespace javabind;

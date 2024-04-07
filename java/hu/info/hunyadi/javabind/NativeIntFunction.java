@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.IntFunction;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.IntFunction;
  */
 public final class NativeIntFunction<R> extends NativeCallback implements IntFunction<R> {
     public native R apply(int value);
+
     public native void close();
 }

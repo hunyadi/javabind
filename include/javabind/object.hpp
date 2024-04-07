@@ -43,6 +43,7 @@ namespace javabind
     public:
         constexpr static std::string_view class_name = ClassTraits<T>::class_name;
         constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
+        constexpr static std::string_view java_name = ClassTraits<T>::class_name;
         constexpr static std::string_view sig = join_v<class_type_prefix, class_path, class_type_suffix>;
     };
 

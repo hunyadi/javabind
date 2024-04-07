@@ -10,9 +10,12 @@ public class Sample extends NativeObject {
     public native void close();
 
     public native void returns_void();
+
     public native boolean returns_bool();
+
     public native int returns_int();
 
     public native int value();
+
     public native void add(int value);
 }

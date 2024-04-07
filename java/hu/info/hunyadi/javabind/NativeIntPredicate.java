@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.IntPredicate;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.IntPredicate;
  */
 public final class NativeIntPredicate extends NativeCallback implements IntPredicate {
     public native boolean test(int value);
+
     public native void close();
 }

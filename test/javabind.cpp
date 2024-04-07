@@ -226,6 +226,20 @@ struct StaticSample
             };
     }
 
+    static std::function<double(std::string)> get_string_to_double_function()
+    {
+        return
+            [](const std::string& str)
+            {
+                char* ptr;
+                double val = strtod(str.data(), &ptr);
+                if (ptr != str.data() + str.size()) {
+                    throw std::runtime_error("strtod");
+                }
+                return val;
+            };
+    }
+
     static Rectangle pass_record(const Rectangle& rect)
     {
         JAVA_OUTPUT << "pass_record({" << rect.width << ", " << rect.height << "})" << std::endl;
@@ -352,7 +366,7 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::get_to_string_function<double>>("get_double_to_string_function")
         .function<StaticSample::get_from_string_function<int32_t>>("get_string_to_int_function")
         .function<StaticSample::get_from_string_function<int64_t>>("get_string_to_long_function")
-        .function<StaticSample::get_from_string_function<double>>("get_string_to_double_function")
+        .function<StaticSample::get_string_to_double_function>("get_string_to_double_function")
 
         // record class
         .function<StaticSample::pass_record>("pass_record")
@@ -370,4 +384,6 @@ JAVA_EXTENSION_MODULE()
         .field<&Residence::country>("country")
         .field<&Residence::city>("city")
         ;
+
+    print_registered_bindings();
 }

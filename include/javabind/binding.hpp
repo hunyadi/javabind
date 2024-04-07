@@ -103,8 +103,8 @@ namespace javabind
     template <typename T, auto func, typename... Args>
     struct MemberAdapter
     {
-        template <typename T>
-        using java_t = typename ArgType<T>::type::java_type;
+        template <typename R>
+        using java_t = typename ArgType<R>::type::java_type;
 
         using result_type = decltype((std::declval<T>().*func)(std::declval<Args>()...));
 
@@ -164,8 +164,8 @@ namespace javabind
     template <typename T, typename... Args>
     struct CreateObjectAdapter
     {
-        template <typename T>
-        using java_t = typename ArgType<T>::type::java_type;
+        template <typename R>
+        using java_t = typename ArgType<R>::type::java_type;
 
         static jobject invoke(JNIEnv* env, jclass cls, java_t<Args>... args)
         {
@@ -240,7 +240,8 @@ namespace javabind
         std::string_view signature;
         bool is_member;
         void* function_entry_point;
-        std::string_view friendly_signature;
+        std::string_view param_display;
+        std::string_view return_display;
     };
 
     struct FunctionBindings {
@@ -263,13 +264,16 @@ namespace javabind
             static_assert(is_unbound_function_pointer<func_type>::value, "The template argument is expected to be an unbound function pointer type.");
 
             auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
-            bindings.push_back({
-                name,
-                FunctionTraits<func_type>::sig,
-                false,
-                callable<T, func>(args_t<func_type>{}),
-                FunctionTraits<func_type>::sig
-                });
+            bindings.push_back(
+                {
+                    name,
+                    FunctionTraits<func_type>::sig,
+                    false,
+                    callable<T, func>(args_t<func_type>{}),
+                    FunctionTraits<func_type>::param_display,
+                    FunctionTraits<func_type>::return_display
+                }
+            );
             return *this;
         }
     };
@@ -285,13 +289,16 @@ namespace javabind
         native_class()
         {
             auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
-            bindings.push_back({
-                "close",
-                FunctionTraits<void()>::sig,
-                true,
-                object_termination<T>(),
-                FunctionTraits<void()>::sig
-                });
+            bindings.push_back(
+                {
+                    "close",
+                    FunctionTraits<void()>::sig,
+                    true,
+                    object_termination<T>(),
+                    "",
+                    "void"
+                }
+            );
         }
 
         native_class(const native_class&) = delete;
@@ -315,13 +322,16 @@ namespace javabind
             static_assert(std::is_function_v<F>, "Use a function signature such as Sample(int, std::string) to identify a constructor.");
 
             auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
-            bindings.push_back({
-                name,
-                FunctionTraits<F>::sig,
-                false,
-                object_initialization<T>(args_t<F>{}),
-                FunctionTraits<F>::sig
-                });
+            bindings.push_back(
+                {
+                    name,
+                    FunctionTraits<F>::sig,
+                    false,
+                    object_initialization<T>(args_t<F>{}),
+                    FunctionTraits<F>::param_display,
+                    FunctionTraits<F>::return_display
+                }
+            );
             return *this;
         }
 
@@ -349,13 +359,16 @@ namespace javabind
             static_assert(is_unbound || is_member, "The non-type template argument is expected to be of a free function or a compatible member function pointer type.");
 
             auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
-            bindings.push_back({
-                name,
-                FunctionTraits<func_type>::sig,
-                is_member,
-                callable<T, func>(args_t<func_type>{}),
-                FunctionTraits<func_type>::sig
-                });
+            bindings.push_back(
+                {
+                    name,
+                    FunctionTraits<func_type>::sig,
+                    is_member,
+                    callable<T, func>(args_t<func_type>{}),
+                    FunctionTraits<func_type>::param_display,
+                    FunctionTraits<func_type>::return_display
+                }
+            );
             return *this;
         }
     };

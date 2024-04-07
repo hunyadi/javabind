@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.ToIntFunction;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.ToIntFunction;
  */
 public final class NativeToIntFunction<T> extends NativeCallback implements ToIntFunction<T> {
     public native int applyAsInt(T value);
+
     public native void close();
 }

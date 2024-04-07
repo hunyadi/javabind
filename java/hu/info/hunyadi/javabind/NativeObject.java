@@ -19,11 +19,14 @@ public abstract class NativeObject implements AutoCloseable {
      *
      * The native pointer member is assigned in native code via a factory function.
      */
-    protected NativeObject() {}
+    protected NativeObject() {
+    }
 
     /**
-     * Holds an opaque reference to an object that exists in the native code execution context.
+     * Holds an opaque reference to an object that exists in the native code
+     * execution context.
      */
+    @SuppressWarnings("unused")
     private long nativePointer = 0;
 
     /**

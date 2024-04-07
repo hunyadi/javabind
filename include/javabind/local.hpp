@@ -12,6 +12,7 @@
 #include <jni.h>
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 namespace javabind
 {

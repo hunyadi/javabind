@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.DoublePredicate;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.DoublePredicate;
  */
 public final class NativeDoublePredicate extends NativeCallback implements DoublePredicate {
     public native boolean test(double value);
+
     public native void close();
 }

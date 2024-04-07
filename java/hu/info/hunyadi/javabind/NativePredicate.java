@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.Predicate;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.Predicate;
  */
 public final class NativePredicate<T> extends NativeCallback implements Predicate<T> {
     public native boolean test(T value);
+
     public native void close();
 }

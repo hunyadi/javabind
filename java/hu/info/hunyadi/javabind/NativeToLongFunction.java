@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.ToLongFunction;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.ToLongFunction;
  */
 public final class NativeToLongFunction<T> extends NativeCallback implements ToLongFunction<T> {
     public native long applyAsLong(T value);
+
     public native void close();
 }

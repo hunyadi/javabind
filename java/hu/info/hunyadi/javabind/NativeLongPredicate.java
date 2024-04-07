@@ -10,7 +10,6 @@
 
 package hu.info.hunyadi.javabind;
 
-import hu.info.hunyadi.javabind.NativeCallback;
 import java.util.function.LongPredicate;
 
 /**
@@ -18,5 +17,6 @@ import java.util.function.LongPredicate;
  */
 public final class NativeLongPredicate extends NativeCallback implements LongPredicate {
     public native boolean test(long value);
+
     public native void close();
 }

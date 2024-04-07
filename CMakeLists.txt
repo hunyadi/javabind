@@ -33,7 +33,7 @@ else()
 endif()
 
 # shared library for unit tests
-add_library(javabind_native MODULE test/javabind.cpp)
+add_library(javabind_native SHARED test/javabind.cpp)
 add_dependencies(javabind_native javabind)
 target_include_directories(javabind_native PRIVATE ${JNI_INCLUDE_DIRS})
 target_link_libraries(javabind_native PRIVATE javabind ${JAVA_JVM_LIBRARY})
