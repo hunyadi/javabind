@@ -9,7 +9,6 @@
  */
 
 #pragma once
-#include "argtype.hpp"
 #include "object.hpp"
 #include <map>
 #include <vector>

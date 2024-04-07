@@ -10,7 +10,7 @@
 
 #pragma once
 #include "local.hpp"
-#include "argtype.hpp"
+#include "type.hpp"
 #include "exception.hpp"
 #include "message.hpp"
 

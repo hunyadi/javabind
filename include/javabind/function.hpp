@@ -9,7 +9,6 @@
  */
 
 #pragma once
-#include "argtype.hpp"
 #include "local.hpp"
 #include "global.hpp"
 #include "signature.hpp"

@@ -1,5 +1,14 @@
+/**
+ * javabind: effective C++ and Java interoperability
+ * @see https://github.com/hunyadi/javabind
+ *
+ * Copyright (c) 2024 Levente Hunyadi
+ *
+ * This work is licensed under the terms of the MIT license.
+ * For a copy, see <https://opensource.org/licenses/MIT>.
+ */
+
 #pragma once
-#include "argtype.hpp"
 #include "object.hpp"
 #include "signature.hpp"
 #include <vector>
@@ -14,7 +23,7 @@ namespace javabind
     struct ClassTraits<std::vector<T>>
     {
         constexpr static std::string_view class_name = "java.util.List";
-        constexpr static std::string_view class_patj = "java/util/List";
+        constexpr static std::string_view class_path = "java/util/List";
         constexpr static std::string_view java_name = GenericTraits<class_name, T>::java_name;
         constexpr static std::string_view concrete_class_path = "java/util/ArrayList";
     };

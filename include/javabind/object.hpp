@@ -9,8 +9,8 @@
  */
 
 #pragma once
-#include "argtype.hpp"
 #include "local.hpp"
+#include "type.hpp"
 #include "string.hpp"
 
 namespace javabind

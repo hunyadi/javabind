@@ -194,16 +194,22 @@ Exceptions thrown in C++ automatically trigger a Java exception when crossing th
 
 Exceptions originating from Java are automatically wrapped in a C++ type called `JavaException`, which derives from `std::exception`. The function `what()` in `JavaException` retrieves the Java exception message. C++ code can catch `JavaException` and take appropriate action, which causes the exception to be cleared in Java.
 
+## Functional interface
+
+javabind can expose C++ function objects (`std::function<R(T)>`) to Java with wrappers that implement functional interfaces such as `Function<T,R>` or `Predicate<T>`. Each wrapper such as `NativeFunction<T,R>` or `NativePredicate<T>` extends the abstract base class `NativeCallback`, which is responsible for encapsulating a raw pointer. This raw pointer points at a memory location in the C++ domain, allocated with the operator `new`, and de-allocated with `delete` once the Java wrapper is garbage collected. Invocation is done in a way similar to regular native class methods but the call is bound not to an object instance (as with `NativeObject`) but to a function object.
+
+Because function objects as C++ return values are depending on class definitions in Java, auxiliary classes such as `NativeFunction<T,R>` or `NativePredicate<T>` must be available on the class path at binding registration time to be accessible for `FindClass`.
+
 ## Binding registration
 
 The macro `JAVA_EXTENSION_MODULE` expands into a pair of function definitions:
 
 ```c
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) { ... }
-JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) { ... }
+JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved) { ... }
 ```
 
-These definitions, in turn, iterate over the function and field bindings registered with `native_class` and `record_class`.
+These definitions, in turn, iterate over the function and field bindings registered with `native_class`, `static_class` and `record_class`.
 
 Each function binding generates a function pointer at compile time, which are passed to the JNI function `RegisterNatives`. Each of these function pointers points at a static member function of a template class, where the template parameters capture the type information extracted from the function signature. When the function is invoked through the pointer, the function makes the appropriate type conversions to cast Java types into C++ types and back. For example, the C++ function signature
 
@@ -215,5 +221,5 @@ causes the function adapter template to be instantiated with parameter types `st
 
 Internally, field bindings utilize JNI accessor functions like `GetObjectField` and `SetObjectField` to extract and populate Java objects. Like with function bindings, javabind uses C++ type information to make the appropriate JNI function call. For instance, setting a field with type `double` entails a call to `GetDoubleField` (from Java to C++) or `SetDoubleField` (from C++ to Java). If the type is a composite type, such as a `std::vector<T>`, then a Java object is constructed recursively, and then set with `SetObjectField`. For example,
 
-* Setting a field of type `std::list<int32_t>` first creates a `java.util.ArrayList` with JNI's `NewObject`, then sets elements with the `add` method (invoked using JNI's `CallBooleanMethod`), performing boxing for the primitive type `int` with `valueOf`, and finally uses `SetObjectField` with the newly created `java.util.ArrayList` instance.
+* Setting a field of type `std::vector<boxed<int32_t>>` first creates a `java.util.ArrayList` with JNI's `NewObject`, then sets elements with the `add` method (invoked using JNI's `CallBooleanMethod`), performing boxing for the primitive type `int` with `valueOf`, and finally uses `SetObjectField` with the newly created `java.util.ArrayList` instance.
 * Setting an `std::vector<std::string>` field involves creating a `java.util.ArrayList` with JNI's `NewObject`, and a call to JNI's `NewStringUTF` for each string element. The strings are then added to the `java.util.ArrayList` instance with `add`, and finally to the field with `SetObjectField`.

@@ -118,15 +118,15 @@ public class TestJavaBind {
         }
         System.out.println("PASS: getters and setters with record class");
 
-        assert StaticSample.pass_list(List.of(new Rectangle(1.0, 2.0), new Rectangle(3.0, 4.0))).equals(List.of(new Rectangle(1.0, 2.0), new Rectangle(3.0, 4.0)));
+        assert StaticSample.pass_list(List.of(new Rectangle(1.0, 2.0), new Rectangle(3.0, 4.0)))
+                .equals(List.of(new Rectangle(1.0, 2.0), new Rectangle(3.0, 4.0)));
         assert StaticSample.pass_ordered_set(Set.of("one", "two", "three")).equals(Set.of("one", "two", "three"));
         assert StaticSample.pass_unordered_set(Set.of("one", "two", "three")).equals(Set.of("one", "two", "three"));
 
         Map<String, Rectangle> rectangles = Map.ofEntries(
-            entry("a", new Rectangle(1.0, 2.0)),
-            entry("b", new Rectangle(3.0, 4.0)),
-            entry("c", new Rectangle(5.0, 6.0))
-        );
+                entry("a", new Rectangle(1.0, 2.0)),
+                entry("b", new Rectangle(3.0, 4.0)),
+                entry("c", new Rectangle(5.0, 6.0)));
         assert StaticSample.pass_ordered_map(rectangles).equals(rectangles);
         assert StaticSample.pass_unordered_map(rectangles).equals(rectangles);
         System.out.println("PASS: collections");

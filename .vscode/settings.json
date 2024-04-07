@@ -1,14 +1,26 @@
 {
     "cSpell.words": [
+        "jarray",
         "javabind",
+        "jboolean",
+        "jbyte",
+        "jchar",
+        "jclass",
         "jdouble",
+        "jfield",
+        "jfloat",
         "jint",
         "jlong",
         "jmethod",
+        "JNIEXPORT",
         "jobject",
+        "jshort",
+        "jsize",
         "jstring",
+        "jthrowable",
         "Levente",
-        "Ljava"
+        "Ljava",
+        "tparam"
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "C_Cpp.default.cppStandard": "c++17",
