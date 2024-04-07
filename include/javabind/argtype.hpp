@@ -24,7 +24,7 @@ namespace javabind
      * Template substitution fails automatically unless the type is a well-known type or has been
      * declared with DECLARE_NATIVE_CLASS, DECLARE_RECORD_CLASS or DECLARE_STATIC_CLASS.
      */
-    template <typename T>
+    template <typename T, typename Enable = void>
     struct ArgType
     {
         static_assert(fail<T>::value, "Unrecognized type detected, ensure that all involved argument types have been declared as a binding type with DECLARE_*_CLASS.");

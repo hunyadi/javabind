@@ -648,5 +648,5 @@ namespace javabind
     template <> struct ArgType<object> { using type = JavaObjectType; };
 
     template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };
-    template <typename T> struct ArgType<std::vector<T>> { using type = JavaArrayType<T>; };
+    template <typename T> struct ArgType<std::vector<T>, std::enable_if_t<std::is_arithmetic_v<T>>> { using type = JavaArrayType<T>; };
 }

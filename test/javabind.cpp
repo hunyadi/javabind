@@ -11,15 +11,21 @@
 #include <javabind/javabind.hpp>
 #include <charconv>
 
+template <typename K, typename V>
+std::ostream& operator<<(std::ostream& os, const std::pair<K, V>& pair)
+{
+    return os << pair.first << ": " << pair.second;
+}
+
 template <typename L>
-std::ostream& write_bracketed_list(std::ostream& os, const L& vec, char left, char right)
+std::ostream& write_bracketed_list(std::ostream& os, const L& list, char left, char right)
 {
     os << left;
-    if (!vec.empty()) {
-        auto&& it = vec.begin();
+    if (!list.empty()) {
+        auto&& it = list.begin();
         os << *it;
 
-        for (++it; it != vec.end(); ++it) {
+        for (++it; it != list.end(); ++it) {
             os << ", " << *it;
         }
     }
@@ -39,6 +45,36 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& list)
     return write_list(os, list);
 }
 
+template <typename S>
+std::ostream& write_set(std::ostream& os, const S& set)
+{
+    return write_bracketed_list(os, set, '{', '}');
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::set<T>& set)
+{
+    return write_set(os, set);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::unordered_set<T>& set)
+{
+    return write_set(os, set);
+}
+
+template <typename K, typename V>
+std::ostream& operator<<(std::ostream& os, const std::map<K, V>& set)
+{
+    return write_set(os, set);
+}
+
+template <typename K, typename V>
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V>& set)
+{
+    return write_set(os, set);
+}
+
 struct Rectangle
 {
     Rectangle() = default;
@@ -50,6 +86,11 @@ struct Rectangle
     double width = 0.0;
     double height = 0.0;
 };
+
+std::ostream& operator<<(std::ostream& os, const Rectangle& rect)
+{
+    return os << "{" << rect.width << ", " << rect.height << "}";
+}
 
 struct PrimitiveRecord
 {
@@ -242,7 +283,7 @@ struct StaticSample
 
     static Rectangle pass_record(const Rectangle& rect)
     {
-        JAVA_OUTPUT << "pass_record({" << rect.width << ", " << rect.height << "})" << std::endl;
+        JAVA_OUTPUT << "pass_record(" << rect << ")" << std::endl;
         return Rectangle(2 * rect.width, 2 * rect.height);
     }
 
@@ -257,6 +298,13 @@ struct StaticSample
             rec.float_value * 2.0f,
             rec.double_value * 2.0
         };
+    }
+
+    template <typename C>
+    static C pass_collection(const C& collection)
+    {
+        JAVA_OUTPUT << "pass_collection(" << collection << ")" << std::endl;
+        return C(collection.begin(), collection.end());
     }
 };
 
@@ -371,7 +419,15 @@ JAVA_EXTENSION_MODULE()
         // record class
         .function<StaticSample::pass_record>("pass_record")
         .function<StaticSample::transform_record>("transform_record")
+
+        // collection types
+        .function<StaticSample::pass_collection<std::vector<Rectangle>>>("pass_list")
+        .function<StaticSample::pass_collection<std::set<std::string>>>("pass_ordered_set")
+        .function<StaticSample::pass_collection<std::unordered_set<std::string>>>("pass_unordered_set")
+        .function<StaticSample::pass_collection<std::map<std::string, Rectangle>>>("pass_ordered_map")
+        .function<StaticSample::pass_collection<std::unordered_map<std::string, Rectangle>>>("pass_unordered_map")
         ;
+
 
     native_class<Person>()
         .constructor<Person(std::string)>("create")

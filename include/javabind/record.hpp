@@ -9,15 +9,13 @@
  */
 
 #pragma once
+#include "argtype.hpp"
 #include "object.hpp"
 #include <map>
 #include <vector>
 
 namespace javabind
 {
-    template <typename T>
-    struct ArgType;
-
     /**
      * Meta-information about a native class member variable.
      */

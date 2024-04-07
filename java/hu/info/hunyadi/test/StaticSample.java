@@ -1,5 +1,8 @@
 package hu.info.hunyadi.test;
 
+import java.util.List;
+import java.util.Set;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.IntPredicate;
 import java.util.function.LongPredicate;
@@ -102,4 +105,14 @@ public class StaticSample {
     public static native Rectangle pass_record(Rectangle rect);
 
     public static native PrimitiveRecord transform_record(PrimitiveRecord rec);
+
+    public static native List<Rectangle> pass_list(List<Rectangle> list);
+
+    public static native Set<String> pass_ordered_set(Set<String> set);
+
+    public static native Set<String> pass_unordered_set(Set<String> set);
+
+    public static native Map<String, Rectangle> pass_ordered_map(Map<String, Rectangle> map);
+
+    public static native Map<String, Rectangle> pass_unordered_map(Map<String, Rectangle> map);
 }

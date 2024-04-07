@@ -14,6 +14,7 @@
 #include "class.hpp"
 #include "record.hpp"
 #include "function.hpp"
+#include "collection.hpp"
 
 #include "exception.hpp"
 #include "message.hpp"

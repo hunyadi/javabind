@@ -9,13 +9,11 @@
  */
 
 #pragma once
+#include "argtype.hpp"
 #include "string.hpp"
 
 namespace javabind
 {
-    template <typename T>
-    struct ArgType;
-
     template <typename>
     struct FieldType;
 
