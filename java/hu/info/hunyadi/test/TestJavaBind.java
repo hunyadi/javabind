@@ -35,6 +35,8 @@ public class TestJavaBind {
         assert StaticSample.pass_double(1.125) == 1.125;
         assert StaticSample.pass_double(Double.MAX_VALUE) == Double.MAX_VALUE;
         assert StaticSample.pass_string("ok").equals("ok");
+        assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
+        StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
         System.out.println("PASS: class functions with simple types");
 
         assert StaticSample.pass_boxed_boolean(Boolean.valueOf(true)).equals(Boolean.valueOf(true));
@@ -57,6 +59,12 @@ public class TestJavaBind {
         assert Arrays.equals(StaticSample.pass_long_array(long_array), long_array);
         assert Arrays.equals(StaticSample.pass_float_array(float_array), float_array);
         assert Arrays.equals(StaticSample.pass_double_array(double_array), double_array);
+        assert Arrays.equals(StaticSample.pass_bool_array_view(bool_array), bool_array);
+        assert Arrays.equals(StaticSample.pass_short_array_view(short_array), short_array);
+        assert Arrays.equals(StaticSample.pass_int_array_view(int_array), int_array);
+        assert Arrays.equals(StaticSample.pass_long_array_view(long_array), long_array);
+        assert Arrays.equals(StaticSample.pass_float_array_view(float_array), float_array);
+        assert Arrays.equals(StaticSample.pass_double_array_view(double_array), double_array);
         System.out.println("PASS: class functions with array types");
 
         assert StaticSample.pass_function("my string", s -> "'" + s + "'").equals("my string -> 'my string'");

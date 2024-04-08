@@ -174,6 +174,17 @@ struct StaticSample
         return value;
     }
 
+    static std::string pass_utf8_string(const std::string_view& value)
+    {
+        JAVA_OUTPUT << "pass_utf8_string(" << value << ")" << std::endl;
+        return std::string(value);
+    }
+
+    static void pass_utf16_string(const std::u16string_view& value)
+    {
+        JAVA_OUTPUT << "pass_utf16_string(len = " << value.size() << ")" << std::endl;
+    }
+
     template <typename T>
     static javabind::boxed<T> pass_boxed(javabind::boxed<T> value)
     {
@@ -186,6 +197,14 @@ struct StaticSample
     {
         JAVA_OUTPUT << "pass_array(" << values << ")" << std::endl;
         return std::vector<T>(values.begin(), values.end());
+    }
+
+    template <typename T>
+    static std::vector<T> pass_array_view(const std::basic_string_view<T>& values)
+    {
+        auto result = std::vector<T>(values.begin(), values.end());
+        JAVA_OUTPUT << "pass_array_view(" << result << ")" << std::endl;
+        return result;
     }
 
     static std::string pass_function(const std::string& str, const std::function<std::string(std::string)>& fn)
@@ -379,6 +398,8 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_value<float>>("pass_float")
         .function<StaticSample::pass_value<double>>("pass_double")
         .function<StaticSample::pass_string>("pass_string")
+        .function<StaticSample::pass_utf8_string>("pass_utf8_string")
+        .function<StaticSample::pass_utf16_string>("pass_utf16_string")
 
         // boxing and unboxing
         .function<StaticSample::pass_boxed<bool>>("pass_boxed_boolean")
@@ -395,6 +416,13 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_array<int64_t>>("pass_long_array")
         .function<StaticSample::pass_array<float>>("pass_float_array")
         .function<StaticSample::pass_array<double>>("pass_double_array")
+        .function<StaticSample::pass_array_view<bool>>("pass_bool_array_view")
+        .function<StaticSample::pass_array_view<int8_t>>("pass_byte_array_view")
+        .function<StaticSample::pass_array_view<int16_t>>("pass_short_array_view")
+        .function<StaticSample::pass_array_view<int32_t>>("pass_int_array_view")
+        .function<StaticSample::pass_array_view<int64_t>>("pass_long_array_view")
+        .function<StaticSample::pass_array_view<float>>("pass_float_array_view")
+        .function<StaticSample::pass_array_view<double>>("pass_double_array_view")
 
         // functional interface
         .function<StaticSample::pass_function>("pass_function")

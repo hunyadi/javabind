@@ -42,6 +42,10 @@ public class StaticSample {
 
     public static native String pass_string(String value);
 
+    public static native String pass_utf8_string(String value);
+
+    public static native void pass_utf16_string(String value);
+
     public static native Boolean pass_boxed_boolean(Boolean value);
 
     public static native Integer pass_boxed_integer(Integer value);
@@ -65,6 +69,20 @@ public class StaticSample {
     public static native float[] pass_float_array(float[] values);
 
     public static native double[] pass_double_array(double[] values);
+
+    public static native boolean[] pass_bool_array_view(boolean[] values);
+
+    public static native byte[] pass_byte_array_view(byte[] values);
+
+    public static native short[] pass_short_array_view(short[] values);
+
+    public static native int[] pass_int_array_view(int[] values);
+
+    public static native long[] pass_long_array_view(long[] values);
+
+    public static native float[] pass_float_array_view(float[] values);
+
+    public static native double[] pass_double_array_view(double[] values);
 
     public static native String pass_function(String s, Function<String, String> fn);
 
