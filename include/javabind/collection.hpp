@@ -140,7 +140,7 @@ namespace javabind
             while (hasNext) {
                 LocalObjectRef element(env, env->CallObjectMethod(setIterator.ref(), nextFunc.ref()));
                 using java_elem_type = typename ArgType<element_type>::type;
-                nativeSet.insert(java_elem_type::native_value(env, static_cast<java_elem_type::java_type>(element.ref())));
+                nativeSet.insert(java_elem_type::native_value(env, static_cast<typename java_elem_type::java_type>(element.ref())));
                 hasNext = static_cast<bool>(env->CallBooleanMethod(setIterator.ref(), hasNextFunc.ref()));
             }
             return nativeSet;
