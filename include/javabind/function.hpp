@@ -16,8 +16,18 @@
 
 namespace javabind
 {
+    struct BaseCallback
+    {
+        virtual ~BaseCallback() {}
+
+        static void deallocate(JNIEnv*, jlong ptr)
+        {
+            delete reinterpret_cast<BaseCallback*>(ptr);
+        }
+    };
+
     template<typename java_result_type, typename java_arg_type>
-    struct NativeCallback
+    struct NativeCallback : BaseCallback
     {
         virtual java_result_type invoke(JNIEnv* env, java_arg_type arg) = 0;
         virtual ~NativeCallback() {}
@@ -99,19 +109,15 @@ namespace javabind
             // look up class that wraps native callbacks
             LocalClassRef cls(env, WrapperType::native_class_path);
 
-            // instantiate Java object by skipping constructor
-            jobject obj = env->AllocObject(cls.ref());
-            if (obj == nullptr) {
-                throw JavaException(env);
-            }
-
             // instantiate native callback
             callback_type* ptr = new ForwardingCallback<Result, Arg>(std::move(fn));
 
-            // store native pointer in Java object field
-            Field field = cls.getField("nativePointer", ArgType<callback_type*>::type::sig);
-            ArgType<callback_type*>::type::java_set_field_value(env, obj, field, ptr);
-
+            // instantiate Java object via constructor
+            Method constructor = cls.getMethod("<init>", "(J)V");
+            jobject obj = env->NewObject(cls.ref(), constructor.ref(), ptr);
+            if (obj == nullptr) {
+                throw JavaException(env);
+            }
             return obj;
         }
     };

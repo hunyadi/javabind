@@ -27,7 +27,7 @@ public abstract class NativeObject implements AutoCloseable {
      * execution context.
      */
     @SuppressWarnings("unused")
-    private long nativePointer = 0;
+    private final long nativePointer = 0;
 
     /**
      * Disposes of objects allocated in the native code execution context.

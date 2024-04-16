@@ -16,7 +16,9 @@ import java.util.function.DoubleFunction;
  * Represents an object that wraps a native object-to-double callback function.
  */
 public final class NativeDoubleFunction<R> extends NativeCallback implements DoubleFunction<R> {
-    public native R apply(double value);
+    protected NativeDoubleFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native R apply(double value);
 }

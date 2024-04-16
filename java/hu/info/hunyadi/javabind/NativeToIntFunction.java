@@ -16,7 +16,9 @@ import java.util.function.ToIntFunction;
  * Represents an object that wraps a native object-to-int callback function.
  */
 public final class NativeToIntFunction<T> extends NativeCallback implements ToIntFunction<T> {
-    public native int applyAsInt(T value);
+    protected NativeToIntFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native int applyAsInt(T value);
 }

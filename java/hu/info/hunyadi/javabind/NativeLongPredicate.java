@@ -16,7 +16,9 @@ import java.util.function.LongPredicate;
  * Represents an object that wraps a native object-to-boolean callback function.
  */
 public final class NativeLongPredicate extends NativeCallback implements LongPredicate {
-    public native boolean test(long value);
+    protected NativeLongPredicate(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native boolean test(long value);
 }

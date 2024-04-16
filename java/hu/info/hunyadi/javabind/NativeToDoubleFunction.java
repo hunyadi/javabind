@@ -16,7 +16,9 @@ import java.util.function.ToDoubleFunction;
  * Represents an object that wraps a native object-to-double callback function.
  */
 public final class NativeToDoubleFunction<T> extends NativeCallback implements ToDoubleFunction<T> {
-    public native double applyAsDouble(T value);
+    protected NativeToDoubleFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native double applyAsDouble(T value);
 }

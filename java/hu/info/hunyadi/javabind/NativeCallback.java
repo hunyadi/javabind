@@ -10,31 +10,57 @@
 
 package hu.info.hunyadi.javabind;
 
+import java.lang.ref.Cleaner;
+
 /**
  * Represents an object that wraps a native callback function.
  */
 public abstract class NativeCallback implements AutoCloseable {
     /**
-     * Prevents this class from being constructed directly in Java.
-     *
-     * The native pointer member is assigned in native code via a factory function.
-     */
-    protected NativeCallback() {
-    }
-
-    /**
      * Holds an opaque reference to an object that exists in the native code
      * execution context.
      */
-    @SuppressWarnings("unused")
-    private long nativePointer = 0;
+    private final long nativePointer;
+
+    /**
+     * Deallocates native resources associated with the Java host object.
+     */
+    private final Cleaner.Cleanable cleanable;
+
+    /**
+     * Deallocates native resources when the Java host object becomes phantom
+     * reachable.
+     */
+    private static final Cleaner cleaner = Cleaner.create();
+
+    private static class Deallocator implements Runnable {
+        private long pointer;
+
+        public Deallocator(long pointer) {
+            this.pointer = pointer;
+        }
+
+        @Override
+        public void run() {
+            NativeCallback.deallocate(this.pointer);
+        }
+    }
+
+    /**
+     * Creates this callback object by wrapping a native callback pointer.
+     */
+    protected NativeCallback(long pointer) {
+        nativePointer = pointer;
+        cleanable = cleaner.register(this, new Deallocator(pointer));
+    }
+
+    @Override
+    public void close() {
+        cleanable.clean();
+    }
 
     /**
      * Disposes of objects allocated in the native code execution context.
      */
-    public abstract void close();
-
-    protected void finalize() {
-        close();
-    }
+    private static native void deallocate(long pointer);
 }

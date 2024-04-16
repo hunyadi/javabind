@@ -406,6 +406,8 @@ namespace javabind
     template <typename T>
     struct JavaPointerType : PrimitiveJavaType<JavaPointerType<T>, std::intptr_t, jlong>
     {
+        static_assert(sizeof(void*) == sizeof(jlong), "C++ pointer must be assignable to Java long type.");
+
         constexpr static std::string_view class_name = "java.lang.Long";
         constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";

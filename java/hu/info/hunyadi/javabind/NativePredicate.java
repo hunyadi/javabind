@@ -16,7 +16,9 @@ import java.util.function.Predicate;
  * Represents an object that wraps a native object-to-boolean callback function.
  */
 public final class NativePredicate<T> extends NativeCallback implements Predicate<T> {
-    public native boolean test(T value);
+    protected NativePredicate(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native boolean test(T value);
 }

@@ -16,7 +16,9 @@ import java.util.function.Function;
  * Represents an object that wraps a native object-to-object callback function.
  */
 public final class NativeFunction<T, R> extends NativeCallback implements Function<T, R> {
-    public native R apply(T t);
+    protected NativeFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native R apply(T t);
 }

@@ -16,7 +16,9 @@ import java.util.function.IntPredicate;
  * Represents an object that wraps a native object-to-boolean callback function.
  */
 public final class NativeIntPredicate extends NativeCallback implements IntPredicate {
-    public native boolean test(int value);
+    protected NativeIntPredicate(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native boolean test(int value);
 }

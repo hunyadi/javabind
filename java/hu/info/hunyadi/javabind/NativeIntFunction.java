@@ -16,7 +16,9 @@ import java.util.function.IntFunction;
  * Represents an object that wraps a native int-to-object callback function.
  */
 public final class NativeIntFunction<R> extends NativeCallback implements IntFunction<R> {
-    public native R apply(int value);
+    protected NativeIntFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native R apply(int value);
 }

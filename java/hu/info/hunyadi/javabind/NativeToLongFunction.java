@@ -16,7 +16,9 @@ import java.util.function.ToLongFunction;
  * Represents an object that wraps a native object-to-long callback function.
  */
 public final class NativeToLongFunction<T> extends NativeCallback implements ToLongFunction<T> {
-    public native long applyAsLong(T value);
+    protected NativeToLongFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native long applyAsLong(T value);
 }

@@ -38,48 +38,62 @@ namespace javabind
                 return return_type();
             }
         };
-
-        static void deallocate(JNIEnv* env, jobject obj)
-        {
-            try {
-                LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<callback_type*>::type::sig);
-                callback_type* ptr = ArgType<callback_type*>::type::native_field_value(env, obj, field);
-                delete ptr;
-            } catch (JavaException& ex) {
-                env->Throw(ex.innerException());
-            } catch (std::exception& ex) {
-                exception_handler(env, ex);
-            }
-        }
     };
 
-    template <typename R, typename T>
-    static jint register_callback(JNIEnv* env)
+    struct CallbackRegistry
     {
-        using callback_type = typename ArgType<std::function<R(T)>>::type;
-
-        LocalClassRef cls(env, callback_type::native_class_path, std::nothrow);
-        if (cls.ref() == nullptr) {
-            javabind::throw_exception(env, msg() << "Cannot find Java class definition for native callback function: " << callback_type::native_class_path);
-            return JNI_ERR;
-        }
-        JNINativeMethod methods[] = {
-            {
-                const_cast<char*>(callback_type::apply_fn.data()),
-                const_cast<char*>(callback_type::apply_sig.data()),
-                reinterpret_cast<void*>(CallbackHandler<R, T>::invoke)
-            },
-            {
-                const_cast<char*>("close"),
-                const_cast<char*>("()V"),
-                reinterpret_cast<void*>(CallbackHandler<R, T>::deallocate)
+        CallbackRegistry(JNIEnv* env)
+            : env(env)
+        {
+            LocalClassRef cls(env, "hu/info/hunyadi/javabind/NativeCallback", std::nothrow);
+            if (cls.ref() == nullptr) {
+                javabind::throw_exception(env, "Cannot find Java base class definition for native callback function");
+                rc = JNI_ERR;
+                return;
             }
-        };
-        jint rc = env->RegisterNatives(cls.ref(), methods, static_cast<jint>(std::size(methods)));
-        if (rc != JNI_OK) {
+            JNINativeMethod methods[] = {
+                {
+                    const_cast<char*>("deallocate"),
+                    const_cast<char*>("(J)V"),
+                    reinterpret_cast<void*>(BaseCallback::deallocate)
+                }
+            };
+            rc = env->RegisterNatives(cls.ref(), methods, static_cast<jint>(std::size(methods)));
+        }
+
+        template <typename R, typename T>
+        CallbackRegistry& add()
+        {
+            if (rc != JNI_OK) {
+                return *this;
+            }
+
+            using callback_type = typename ArgType<std::function<R(T)>>::type;
+
+            LocalClassRef cls(env, callback_type::native_class_path, std::nothrow);
+            if (cls.ref() == nullptr) {
+                javabind::throw_exception(env, msg() << "Cannot find Java class definition for native callback function: " << callback_type::native_class_path);
+                rc = JNI_ERR;
+                return *this;
+            }
+            JNINativeMethod methods[] = {
+                {
+                    const_cast<char*>(callback_type::apply_fn.data()),
+                    const_cast<char*>(callback_type::apply_sig.data()),
+                    reinterpret_cast<void*>(CallbackHandler<R, T>::invoke)
+                }
+            };
+            rc = env->RegisterNatives(cls.ref(), methods, static_cast<jint>(std::size(methods)));
+            return *this;
+        }
+
+        jint code() const
+        {
             return rc;
         }
-        return JNI_OK;
-    }
+
+    private:
+        JNIEnv* env;
+        jint rc;
+    };
 }

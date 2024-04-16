@@ -16,7 +16,9 @@ import java.util.function.DoublePredicate;
  * Represents an object that wraps a native object-to-boolean callback function.
  */
 public final class NativeDoublePredicate extends NativeCallback implements DoublePredicate {
-    public native boolean test(double value);
+    protected NativeDoublePredicate(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native boolean test(double value);
 }

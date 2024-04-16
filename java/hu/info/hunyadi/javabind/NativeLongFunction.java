@@ -16,7 +16,9 @@ import java.util.function.LongFunction;
  * Represents an object that wraps a native long-to-object callback function.
  */
 public final class NativeLongFunction<R> extends NativeCallback implements LongFunction<R> {
-    public native R apply(long value);
+    protected NativeLongFunction(long pointer) {
+        super(pointer);
+    }
 
-    public native void close();
+    public native R apply(long value);
 }

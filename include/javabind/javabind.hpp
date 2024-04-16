@@ -80,59 +80,31 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
     }
 
     // register Java environment
-    javabind::Environment::load(vm);
-    javabind::this_thread.setEnv(env);
+    Environment::load(vm);
+    this_thread.setEnv(env);
 
     try {
         // invoke user-defined function
         initializer();
 
         // register callback bindings
-        rc = register_callback<bool, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, int32_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, int64_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, double>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<object, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<object, int32_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<object, int64_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<object, double>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<int32_t, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<int64_t, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<double, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, object>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, int32_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, int64_t>(env);
-        if (rc != JNI_OK)
-            return rc;
-        rc = register_callback<bool, double>(env);
-        if (rc != JNI_OK)
-            return rc;
+        rc = CallbackRegistry(env)
+            .add<bool, object>()
+            .add<bool, int32_t>()
+            .add<bool, int64_t>()
+            .add<bool, double>()
+            .add<object, object>()
+            .add<object, int32_t>()
+            .add<object, int64_t>()
+            .add<object, double>()
+            .add<int32_t, object>()
+            .add<int64_t, object>()
+            .add<double, object>()
+            .add<bool, object>()
+            .add<bool, int32_t>()
+            .add<bool, int64_t>()
+            .add<bool, double>()
+            .code();
 
         // register function bindings
         for (auto&& [class_name, bindings] : FunctionBindings::value) {
