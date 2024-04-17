@@ -14,6 +14,10 @@ import java.util.function.DoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.ToDoubleFunction;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
+import java.util.function.DoubleConsumer;
 
 public class StaticSample {
     public static native void returns_void();
@@ -88,6 +92,14 @@ public class StaticSample {
 
     public static native Function<String, String> returns_function(String search, String replace);
 
+    public static native void apply_int_consumer(int value, IntConsumer fn);
+
+    public static native void apply_long_consumer(long value, LongConsumer fn);
+
+    public static native void apply_double_consumer(double value, DoubleConsumer fn);
+
+    public static native void apply_string_consumer(String value, Consumer<String> fn);
+
     public static native boolean apply_int_predicate(int value, IntPredicate fn);
 
     public static native boolean apply_long_predicate(long value, LongPredicate fn);
@@ -119,6 +131,14 @@ public class StaticSample {
     public static native ToLongFunction<String> get_string_to_long_function();
 
     public static native ToDoubleFunction<String> get_string_to_double_function();
+
+    public static native Consumer<String> get_string_consumer();
+
+    public static native IntConsumer get_int_consumer();
+
+    public static native LongConsumer get_long_consumer();
+
+    public static native DoubleConsumer get_double_consumer();
 
     public static native Rectangle pass_record(Rectangle rect);
 

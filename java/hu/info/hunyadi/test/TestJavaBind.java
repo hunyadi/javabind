@@ -72,6 +72,11 @@ public class TestJavaBind {
         assert replace.apply("my string").equals("my_string");
         assert replace.apply("lorem ipsum dolor sit amet").equals("lorem_ipsum_dolor_sit_amet");
 
+        StaticSample.apply_int_consumer(23, val -> System.out.println(val));
+        StaticSample.apply_long_consumer(1989l, val -> System.out.println(val));
+        StaticSample.apply_double_consumer(3.14159265359, val -> System.out.println(val));
+        StaticSample.apply_string_consumer("start to finish", val -> System.out.println(val));
+
         assert StaticSample.apply_int_predicate(23, val -> val > 0);
         assert StaticSample.apply_long_predicate(1989l, val -> val > 0l);
         assert StaticSample.apply_double_predicate(3.14159265359, val -> val > 0.0);
@@ -90,6 +95,11 @@ public class TestJavaBind {
         assert StaticSample.get_string_to_int_function().applyAsInt("123") == 123;
         assert StaticSample.get_string_to_long_function().applyAsLong("456789") == 456789l;
         assert StaticSample.get_string_to_double_function().applyAsDouble("0.125") == 0.125;
+
+        StaticSample.get_string_consumer().accept("alma");
+        StaticSample.get_int_consumer().accept(23);
+        StaticSample.get_long_consumer().accept(1989l);
+        StaticSample.get_double_consumer().accept(3.14);
 
         try {
             StaticSample.get_string_to_int_function().applyAsInt("abcd");

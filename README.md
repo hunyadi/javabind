@@ -65,7 +65,7 @@ JAVA_EXTENSION_MODULE() {
 }
 ```
 
-DECLARE_NATIVE_CLASS assigns a fully-qualified Java class name to the C++ class, which is required to look up objects at run time.
+`DECLARE_NATIVE_CLASS` assigns a fully-qualified Java class name to the C++ class, which is required to look up objects at run time.
 
 The type parameter of the template function `constructor` is a function signature to help choose between multiple available constructors. Use the same style you would with `std::function<R(Args...)>`.
 
@@ -181,6 +181,10 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::function<bool(int32_t)>` | `IntPredicate` | `NativeIntPredicate` implements `IntPredicate` |
 | `std::function<bool(int64_t)>` | `LongPredicate` | `NativeLongPredicate` implements `LongPredicate` |
 | `std::function<bool(double)>` | `DoublePredicate` | `NativeDoublePredicate` implements `DoublePredicate` |
+| `std::function<void(T)>` | `Consumer<T>` | `NativeConsumer<T>` implements `Consumer<T>` |
+| `std::function<void(int32_t)>` | `IntConsumer` | `NativeIntConsumer` implements `IntConsumer` |
+| `std::function<void(int64_t)>` | `LongConsumer` | `NativeLongConsumer` implements `LongConsumer` |
+| `std::function<void(double)>` | `DoubleConsumer` | `NativeDoubleConsumer` implements `DoubleConsumer` |
 
 `boxed` is a lightweight C++ wrapper defined by the library to match Java boxed types such as `java.lang.Integer`. `boxed` has no C++ run-time overhead, it is only used for disambiguation.
 

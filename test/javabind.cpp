@@ -235,6 +235,13 @@ struct StaticSample
     }
 
     template <typename T>
+    static void apply_consumer(T val, const std::function<void(T)>& fn)
+    {
+        JAVA_OUTPUT << "apply_consumer(" << val << ")" << std::endl;
+        fn(val);
+    }
+
+    template <typename T>
     static bool apply_predicate(T val, const std::function<bool(T)>& fn)
     {
         JAVA_OUTPUT << "apply_predicate(" << val << ")" << std::endl;
@@ -297,6 +304,16 @@ struct StaticSample
                     throw std::runtime_error("strtod");
                 }
                 return val;
+            };
+    }
+
+    template <typename T>
+    static std::function<void(T)> get_consumer()
+    {
+        return
+            [](T val)
+            {
+                JAVA_OUTPUT << "consume: " << val << std::endl;
             };
     }
 
@@ -427,6 +444,10 @@ JAVA_EXTENSION_MODULE()
         // functional interface
         .function<StaticSample::pass_function>("pass_function")
         .function<StaticSample::returns_function>("returns_function")
+        .function<StaticSample::apply_consumer<int32_t>>("apply_int_consumer")
+        .function<StaticSample::apply_consumer<int64_t>>("apply_long_consumer")
+        .function<StaticSample::apply_consumer<double>>("apply_double_consumer")
+        .function<StaticSample::apply_consumer<std::string>>("apply_string_consumer")
         .function<StaticSample::apply_predicate<int32_t>>("apply_int_predicate")
         .function<StaticSample::apply_predicate<int64_t>>("apply_long_predicate")
         .function<StaticSample::apply_predicate<double>>("apply_double_predicate")
@@ -443,6 +464,10 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::get_from_string_function<int32_t>>("get_string_to_int_function")
         .function<StaticSample::get_from_string_function<int64_t>>("get_string_to_long_function")
         .function<StaticSample::get_string_to_double_function>("get_string_to_double_function")
+        .function<StaticSample::get_consumer<std::string_view>>("get_string_consumer")
+        .function<StaticSample::get_consumer<int32_t>>("get_int_consumer")
+        .function<StaticSample::get_consumer<int64_t>>("get_long_consumer")
+        .function<StaticSample::get_consumer<double>>("get_double_consumer")
 
         // record class
         .function<StaticSample::pass_record>("pass_record")

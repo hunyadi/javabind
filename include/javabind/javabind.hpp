@@ -104,6 +104,10 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
             .add<bool, int32_t>()
             .add<bool, int64_t>()
             .add<bool, double>()
+            .add<void, object>()
+            .add<void, int32_t>()
+            .add<void, int64_t>()
+            .add<void, double>()
             .code();
 
         // register function bindings

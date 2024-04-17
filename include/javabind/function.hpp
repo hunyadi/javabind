@@ -48,8 +48,13 @@ namespace javabind
 
         java_result_type invoke(JNIEnv* env, java_arg_type arg) override
         {
-            auto&& result = _func(ArgType<T>::type::native_value(env, arg));
-            return ArgType<R>::type::java_value(env, std::move(result));
+            if constexpr (!std::is_same_v<R, void>) {
+                auto&& result = _func(ArgType<T>::type::native_value(env, arg));
+                return ArgType<R>::type::java_value(env, std::move(result));
+            }
+            else {
+                _func(ArgType<T>::type::native_value(env, arg));
+            }
         }
 
     private:
@@ -59,8 +64,6 @@ namespace javabind
     template <typename WrapperType, typename Result, typename Arg>
     struct JavaFunctionBase
     {
-        static_assert(!std::is_same_v<Result, void>, "Use a non-void return type.");
-
         using native_type = std::function<Result(Arg)>;
         using java_type = jobject;
         using java_arg_type = typename ArgType<Arg>::type::java_type;
@@ -79,24 +82,37 @@ namespace javabind
                     JNIEnv* env = this_thread.getEnv();
                     if (!env) {
                         assert(!"consistency failure");
-                        return Result();
+                        if constexpr (!std::is_same_v<Result, void>) {
+                            return Result();
+                        }
+                        else {
+                            return;
+                        }
                     }
 
-                    auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
-                    if constexpr (std::is_same_v<decltype(ret), jobject>) {
-                        // ensure proper deallocation for jobject
-                        LocalObjectRef res = LocalObjectRef(env, ret);
-                        if (env->ExceptionCheck()) {
-                            throw JavaException(env);
+                    if constexpr (!std::is_same_v<Result, void>) {
+                        auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
+                        if constexpr (std::is_same_v<decltype(ret), jobject>) {
+                            // ensure proper deallocation for jobject
+                            LocalObjectRef res = LocalObjectRef(env, ret);
+                            if (env->ExceptionCheck()) {
+                                throw JavaException(env);
+                            }
+                            return ArgType<Result>::type::native_value(env, static_cast<java_result_type>(res.ref()));
                         }
-                        return ArgType<Result>::type::native_value(env, static_cast<java_result_type>(res.ref()));
+                        else {
+                            // no special treatment for primitive types
+                            if (env->ExceptionCheck()) {
+                                throw JavaException(env);
+                            }
+                            return ArgType<Result>::type::native_value(env, ret);
+                        }
                     }
                     else {
-                        // no special treatment for primitive types
+                        WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
                         if (env->ExceptionCheck()) {
                             throw JavaException(env);
                         }
-                        return ArgType<Result>::type::native_value(env, ret);
                     }
                 }
             );
@@ -344,6 +360,83 @@ namespace javabind
         }
     };
 
+    template <typename Arg>
+    struct JavaConsumerType : JavaFunctionBase<JavaConsumerType<Arg>, void, Arg>
+    {
+        using native_type = std::function<void(Arg)>;
+
+        constexpr static std::string_view class_name = "java.util.function.Consumer";
+        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
+        constexpr static std::string_view sig = "Ljava/util/function/Consumer;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeConsumer";
+
+        constexpr static std::string_view apply_fn = "accept";
+        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)V";
+
+    public:
+        static void native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
+        {
+            return env->CallVoidMethod(fn, m, val);
+        }
+    };
+
+    struct JavaIntConsumerType : JavaFunctionBase<JavaIntConsumerType, void, int32_t>
+    {
+        using native_type = std::function<void(int32_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.IntConsumer";
+        constexpr static std::string_view java_name = class_name;
+        constexpr static std::string_view sig = "Ljava/util/function/IntConsumer;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntConsumer";
+
+        constexpr static std::string_view apply_fn = "accept";
+        constexpr static std::string_view apply_sig = "(I)V";
+
+    public:
+        static void native_invoke(JNIEnv* env, jobject fn, jmethodID m, jint val)
+        {
+            return env->CallVoidMethod(fn, m, val);
+        }
+    };
+
+    struct JavaLongConsumerType : JavaFunctionBase<JavaLongConsumerType, void, int64_t>
+    {
+        using native_type = std::function<void(int64_t)>;
+
+        constexpr static std::string_view class_name = "java.util.function.LongConsumer";
+        constexpr static std::string_view java_name = class_name;
+        constexpr static std::string_view sig = "Ljava/util/function/LongConsumer;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongConsumer";
+
+        constexpr static std::string_view apply_fn = "accept";
+        constexpr static std::string_view apply_sig = "(J)V";
+
+    public:
+        static void native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
+        {
+            return env->CallVoidMethod(fn, m, val);
+        }
+    };
+
+    struct JavaDoubleConsumerType : JavaFunctionBase<JavaDoubleConsumerType, void, double>
+    {
+        using native_type = std::function<void(double)>;
+
+        constexpr static std::string_view class_name = "java.util.function.DoubleConsumer";
+        constexpr static std::string_view java_name = class_name;
+        constexpr static std::string_view sig = "Ljava/util/function/DoubleConsumer;";
+        constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoubleConsumer";
+
+        constexpr static std::string_view apply_fn = "accept";
+        constexpr static std::string_view apply_sig = "(D)V";
+
+    public:
+        static void native_invoke(JNIEnv* env, jobject fn, jmethodID m, jdouble val)
+        {
+            return env->CallVoidMethod(fn, m, val);
+        }
+    };
+
     template <typename R, typename T>
     struct ArgType<std::function<R(T)>>
     {
@@ -361,4 +454,9 @@ namespace javabind
     template <typename T> struct ArgType<std::function<int32_t(T)>> { using type = JavaToIntFunctionType<T>; };
     template <typename T> struct ArgType<std::function<int64_t(T)>> { using type = JavaToLongFunctionType<T>; };
     template <typename T> struct ArgType<std::function<double(T)>> { using type = JavaToDoubleFunctionType<T>; };
+
+    template <typename T> struct ArgType<std::function<void(T)>> { using type = JavaConsumerType<T>; };
+    template <> struct ArgType<std::function<void(int32_t)>> { using type = JavaIntConsumerType; };
+    template <> struct ArgType<std::function<void(int64_t)>> { using type = JavaLongConsumerType; };
+    template <> struct ArgType<std::function<void(double)>> { using type = JavaDoubleConsumerType; };
 }
