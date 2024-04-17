@@ -62,6 +62,7 @@ JAVA_EXTENSION_MODULE() {
         .function<&Person::get_residence>("getResidence")
         .function<&Person::set_residence>("setResidence")
         ;
+    print_registered_bindings();
 }
 ```
 
@@ -70,6 +71,8 @@ JAVA_EXTENSION_MODULE() {
 The type parameter of the template function `constructor` is a function signature to help choose between multiple available constructors. Use the same style you would with `std::function<R(Args...)>`.
 
 The non-type template parameter of `function` is a function pointer, either a member function pointer (as shown above) or a free function pointer. If multiple functions have the same name (making the pointer reference ambiguous), a static cast to the right signature might be necessary.
+
+`print_registered_bindings` is a utility function that lets you print the Java class definition that corresponds to the registered C++ class definitions. `print_registered_bindings` prints to Java `System.out` when you load the compiled shared library (`*.so` on macOS and Linux, or `*.dll` on Windows) with Java's `System.loadLibrary()`. You would normally use it in the development phase.
 
 Next, we need corresponding native bindings in Java:
 
@@ -206,7 +209,9 @@ Exceptions originating from Java are automatically wrapped in a C++ type called 
 
 javabind can expose C++ function objects (`std::function<R(T)>`) to Java with wrappers that implement functional interfaces such as `Function<T,R>` or `Predicate<T>`. Each wrapper such as `NativeFunction<T,R>` or `NativePredicate<T>` extends the abstract base class `NativeCallback`, which is responsible for encapsulating a raw pointer. This raw pointer points at a memory location in the C++ domain, allocated with the operator `new`, and de-allocated with `delete` once the Java wrapper is garbage collected. Invocation is done in a way similar to regular native class methods but the call is bound not to an object instance (as with `NativeObject`) but to a function object.
 
-Because function objects as C++ return values are depending on class definitions in Java, auxiliary classes such as `NativeFunction<T,R>` or `NativePredicate<T>` must be available on the class path at binding registration time to be accessible for `FindClass`.
+Because function objects as C++ return values are depending on class definitions in Java, auxiliary classes such as `NativeFunction<T,R>` or `NativePredicate<T>` must be available on the class path at binding registration time to be accessible for `FindClass`. All of these are defined in the namespace `hu.info.hunyadi.javabind`.
+
+Auxiliary classes use `java.lang.ref.Cleaner` to ensure associated native resources are reclaimed when the Java object becomes phantom reachable.
 
 ## Binding registration
 
