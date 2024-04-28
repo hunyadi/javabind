@@ -19,6 +19,186 @@
 
 namespace javabind
 {
+    /**
+     * Provides an opaque view to a Java list.
+     *
+     * Calls to this C++ wrapper object translate into JNI calls, lazily unpacking elements.
+     */
+    template <typename T>
+    struct list_view
+    {
+        list_view(JNIEnv* env, jobject javaList)
+            : env(env)
+            , javaList(javaList)
+        {
+            LocalClassRef listClass(env, javaList);
+            sizeFunc = listClass.getMethod("size", FunctionTraits<int32_t()>::sig);
+            getFunc = listClass.getMethod("get", FunctionTraits<object(int32_t)>::sig);
+        }
+
+        std::size_t size() const
+        {
+            return env->CallIntMethod(javaList, sizeFunc.ref());
+        }
+
+        T get(std::size_t i) const
+        {
+            LocalObjectRef listElement(env, env->CallObjectMethod(javaList, getFunc.ref(), static_cast<jint>(i)));
+            return ArgType<T>::type::native_value(env, listElement.ref());
+        }
+
+    private:
+        JNIEnv* env;
+        jobject javaList;
+        Method sizeFunc;
+        Method getFunc;
+    };
+
+    template <typename T>
+    struct set_view_iterator
+    {
+        set_view_iterator(JNIEnv* env, LocalObjectRef&& setIterator)
+            : env(env)
+            , setIterator(std::move(setIterator))
+        {
+            LocalClassRef iteratorClass(env, "java/util/Iterator");
+            hasNextFunc = iteratorClass.getMethod("hasNext", FunctionTraits<bool()>::sig);
+            nextFunc = iteratorClass.getMethod("next", FunctionTraits<object()>::sig);
+        }
+
+        bool has_next() const
+        {
+            return static_cast<bool>(env->CallBooleanMethod(setIterator.ref(), hasNextFunc.ref()));
+        }
+
+        T get_next() const
+        {
+            LocalObjectRef element(env, env->CallObjectMethod(setIterator.ref(), nextFunc.ref()));
+            using java_elem_type = typename ArgType<T>::type;
+            return java_elem_type::native_value(env, static_cast<typename java_elem_type::java_type>(element.ref()));
+        }
+
+    private:
+        JNIEnv* env;
+        LocalObjectRef setIterator;
+        Method hasNextFunc;
+        Method nextFunc;
+    };
+
+    /**
+     * Provides an opaque view to a Java set.
+     *
+     * Calls to this C++ wrapper object translate into JNI calls, lazily unpacking elements.
+     */
+    template <typename T>
+    struct set_view
+    {
+        set_view(JNIEnv* env, jobject javaSet)
+            : env(env)
+            , javaSet(javaSet)
+        {}
+
+        set_view_iterator<T> iterator() const
+        {
+            LocalClassRef setClass(env, javaSet);
+            Method iteratorFunc = setClass.getMethod("iterator", "()Ljava/util/Iterator;");
+            return set_view_iterator<T>(env, LocalObjectRef(env, env->CallObjectMethod(javaSet, iteratorFunc.ref())));
+        }
+
+    private:
+        JNIEnv* env;
+        jobject javaSet;
+    };
+
+    template <typename K, typename V>
+    struct map_entry
+    {
+        map_entry(K&& key, V&& value)
+            : key(std::forward<K>(key))
+            , value(std::forward<V>(value))
+        {}
+
+        K key;
+        V value;
+    };
+
+    template <typename K, typename V>
+    struct map_view_iterator
+    {
+        map_view_iterator(JNIEnv* env, LocalObjectRef&& mapIterator)
+            : env(env)
+            , mapIterator(std::move(mapIterator))
+        {
+            LocalClassRef iteratorClass(env, "java/util/Iterator");
+            hasNextFunc = iteratorClass.getMethod("hasNext", FunctionTraits<bool()>::sig);
+            nextFunc = iteratorClass.getMethod("next", FunctionTraits<object()>::sig);
+
+            LocalClassRef entryClass(env, "java/util/Map$Entry");
+            getKeyFunc = entryClass.getMethod("getKey", FunctionTraits<object()>::sig);
+            getValueFunc = entryClass.getMethod("getValue", FunctionTraits<object()>::sig);
+        }
+
+        bool has_next() const
+        {
+            return static_cast<bool>(env->CallBooleanMethod(mapIterator.ref(), hasNextFunc.ref()));
+        }
+
+        map_entry<K, V> get_next() const
+        {
+            LocalObjectRef entry(env, env->CallObjectMethod(mapIterator.ref(), nextFunc.ref()));
+            LocalObjectRef javaKey(env, env->CallObjectMethod(entry.ref(), getKeyFunc.ref()));
+            LocalObjectRef javaValue(env, env->CallObjectMethod(entry.ref(), getValueFunc.ref()));
+
+            using java_key_type = typename ArgType<K>::type;
+            using java_value_type = typename ArgType<V>::type;
+
+            auto nativeKey = java_key_type::native_value(env, static_cast<typename java_key_type::java_type>(javaKey.ref()));
+            auto nativeValue = java_value_type::native_value(env, static_cast<typename java_value_type::java_type>(javaValue.ref()));
+
+            return map_entry(std::move(nativeKey), std::move(nativeValue));
+        }
+
+    private:
+        JNIEnv* env;
+        LocalObjectRef mapIterator;
+        Method hasNextFunc;
+        Method nextFunc;
+        Method getKeyFunc;
+        Method getValueFunc;
+    };
+
+    /**
+     * Provides an opaque view to a Java map.
+     *
+     * Calls to this C++ wrapper object translate into JNI calls, lazily unpacking elements.
+     */
+    template <typename K, typename V>
+    struct map_view
+    {
+        map_view(JNIEnv* env, jobject javaMap)
+            : env(env)
+            , javaMap(javaMap)
+        {}
+
+        map_view_iterator<K, V> iterator() const
+        {
+            LocalClassRef mapClass(env, javaMap);
+            Method entrySetFunc = mapClass.getMethod("entrySet", "()Ljava/util/Set;");
+
+            LocalClassRef entrySetClass(env, "java/util/Set");
+            Method iteratorFunc = entrySetClass.getMethod("iterator", "()Ljava/util/Iterator;");
+
+            LocalObjectRef entrySet(env, env->CallObjectMethod(javaMap, entrySetFunc.ref()));
+            LocalObjectRef mapIterator(env, env->CallObjectMethod(entrySet.ref(), iteratorFunc.ref()));
+
+            return map_view_iterator<K, V>(env, std::move(mapIterator));
+        }
+
+    private:
+        JNIEnv* env;
+        jobject javaMap;
+    };
+
     template <typename T>
     struct ClassTraits<std::vector<T>>
     {
@@ -79,19 +259,12 @@ namespace javabind
     public:
         static native_type native_value(JNIEnv* env, java_type javaList)
         {
-            LocalClassRef listClass(env, javaList);
-
-            Method sizeFunc = listClass.getMethod("size", FunctionTraits<int32_t()>::sig);
-            jint len = env->CallIntMethod(javaList, sizeFunc.ref());
-
-            Method getFunc = listClass.getMethod("get", FunctionTraits<object(int32_t)>::sig);
-
+            list_view<T> view(env, javaList);
             native_type nativeList;
-            for (jint i = 0; i < len; i++) {
-                LocalObjectRef listElement(env, env->CallObjectMethod(javaList, getFunc.ref(), i));
-                nativeList.push_back(ArgType<T>::type::native_value(env, listElement.ref()));
+            std::size_t size = view.size();
+            for (std::size_t i = 0; i < size; i++) {
+                nativeList.push_back(view.get(i));
             }
-
             return nativeList;
         }
 
@@ -126,22 +299,11 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaSet)
         {
-            LocalClassRef setClass(env, javaSet);
-            Method iteratorFunc = setClass.getMethod("iterator", "()Ljava/util/Iterator;");
-
-            LocalClassRef iteratorClass(env, "java/util/Iterator");
-            Method hasNextFunc = iteratorClass.getMethod("hasNext", "()Z");
-            Method nextFunc = iteratorClass.getMethod("next", "()Ljava/lang/Object;");
-
-            LocalObjectRef setIterator(env, env->CallObjectMethod(javaSet, iteratorFunc.ref()));
-
+            set_view<element_type> view(env, javaSet);
+            set_view_iterator<element_type> iterator = view.iterator();
             native_type nativeSet;
-            bool hasNext = static_cast<bool>(env->CallBooleanMethod(setIterator.ref(), hasNextFunc.ref()));
-            while (hasNext) {
-                LocalObjectRef element(env, env->CallObjectMethod(setIterator.ref(), nextFunc.ref()));
-                using java_elem_type = typename ArgType<element_type>::type;
-                nativeSet.insert(java_elem_type::native_value(env, static_cast<typename java_elem_type::java_type>(element.ref())));
-                hasNext = static_cast<bool>(env->CallBooleanMethod(setIterator.ref(), hasNextFunc.ref()));
+            while (iterator.has_next()) {
+                nativeSet.insert(iterator.get_next());
             }
             return nativeSet;
         }
@@ -189,38 +351,12 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaMap)
         {
-            LocalClassRef mapClass(env, javaMap);
-            Method entrySetFunc = mapClass.getMethod("entrySet", "()Ljava/util/Set;");
-
-            LocalClassRef entrySetClass(env, "java/util/Set");
-            Method iteratorFunc = entrySetClass.getMethod("iterator", "()Ljava/util/Iterator;");
-
-            LocalClassRef iteratorClass(env, "java/util/Iterator");
-            Method hasNextFunc = iteratorClass.getMethod("hasNext", "()Z");
-            Method nextFunc = iteratorClass.getMethod("next", "()Ljava/lang/Object;");
-
-            LocalClassRef entryClass(env, "java/util/Map$Entry");
-            Method getKeyFunc = entryClass.getMethod("getKey", "()Ljava/lang/Object;");
-            Method getValueFunc = entryClass.getMethod("getValue", "()Ljava/lang/Object;");
-
-            LocalObjectRef entrySet(env, env->CallObjectMethod(javaMap, entrySetFunc.ref()));
-            LocalObjectRef mapIterator(env, env->CallObjectMethod(entrySet.ref(), iteratorFunc.ref()));
-
+            map_view<key_type, value_type> view(env, javaMap);
+            map_view_iterator<key_type, value_type> iterator = view.iterator();
             native_type nativeMap;
-            bool hasNext = static_cast<bool>(env->CallBooleanMethod(mapIterator.ref(), hasNextFunc.ref()));
-            while (hasNext) {
-                LocalObjectRef entry(env, env->CallObjectMethod(mapIterator.ref(), nextFunc.ref()));
-                LocalObjectRef javaKey(env, env->CallObjectMethod(entry.ref(), getKeyFunc.ref()));
-                LocalObjectRef javaValue(env, env->CallObjectMethod(entry.ref(), getValueFunc.ref()));
-
-                using java_key_type = typename ArgType<key_type>::type;
-                using java_value_type = typename ArgType<value_type>::type;
-
-                auto nativeKey = java_key_type::native_value(env, static_cast<typename java_key_type::java_type>(javaKey.ref()));
-                auto nativeValue = java_value_type::native_value(env, static_cast<typename java_value_type::java_type>(javaValue.ref()));
-                nativeMap[nativeKey] = std::move(nativeValue);
-
-                hasNext = static_cast<bool>(env->CallBooleanMethod(mapIterator.ref(), hasNextFunc.ref()));
+            while (iterator.has_next()) {
+                auto item = iterator.get_next();
+                nativeMap[std::move(item.key)] = std::move(item.value);
             }
             return nativeMap;
         }

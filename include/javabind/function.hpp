@@ -149,7 +149,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativePredicate";
 
         constexpr static std::string_view apply_fn = "test";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Z";
+        constexpr static std::string_view apply_sig = FunctionTraits<bool(object)>::sig;
 
     public:
         static jboolean native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
@@ -230,7 +230,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeFunction";
 
         constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)Ljava/lang/Object;";
+        constexpr static std::string_view apply_sig = FunctionTraits<object(object)>::sig;
 
     public:
         static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, java_type val)
@@ -251,7 +251,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeIntFunction";
 
         constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(I)Ljava/lang/Object;";
+        constexpr static std::string_view apply_sig = FunctionTraits<object(int32_t)>::sig;
 
     public:
         static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jint val)
@@ -271,7 +271,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeLongFunction";
 
         constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(J)Ljava/lang/Object;";
+        constexpr static std::string_view apply_sig = FunctionTraits<object(int64_t)>::sig;
 
     public:
         static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jlong val)
@@ -291,7 +291,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeDoubleFunction";
 
         constexpr static std::string_view apply_fn = "apply";
-        constexpr static std::string_view apply_sig = "(D)Ljava/lang/Object;";
+        constexpr static std::string_view apply_sig = FunctionTraits<object(double)>::sig;
 
     public:
         static jobject native_invoke(JNIEnv* env, jobject fn, jmethodID m, jdouble val)
@@ -311,7 +311,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToIntFunction";
 
         constexpr static std::string_view apply_fn = "applyAsInt";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)I";
+        constexpr static std::string_view apply_sig = FunctionTraits<int32_t(object)>::sig;
 
     public:
         static jint native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
@@ -331,7 +331,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToLongFunction";
 
         constexpr static std::string_view apply_fn = "applyAsLong";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)J";
+        constexpr static std::string_view apply_sig = FunctionTraits<int64_t(object)>::sig;
 
     public:
         static jlong native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
@@ -351,7 +351,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeToDoubleFunction";
 
         constexpr static std::string_view apply_fn = "applyAsDouble";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)D";
+        constexpr static std::string_view apply_sig = FunctionTraits<double(object)>::sig;
 
     public:
         static jdouble native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
@@ -371,7 +371,7 @@ namespace javabind
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeConsumer";
 
         constexpr static std::string_view apply_fn = "accept";
-        constexpr static std::string_view apply_sig = "(Ljava/lang/Object;)V";
+        constexpr static std::string_view apply_sig = FunctionTraits<void(object)>::sig;
 
     public:
         static void native_invoke(JNIEnv* env, jobject fn, jmethodID m, jobject val)
