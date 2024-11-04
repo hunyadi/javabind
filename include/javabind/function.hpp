@@ -66,8 +66,8 @@ namespace javabind
     {
         using native_type = std::function<Result(Arg)>;
         using java_type = jobject;
-        using java_arg_type = typename ArgType<Arg>::type::java_type;
-        using java_result_type = typename ArgType<Result>::type::java_type;
+        using java_arg_type = typename ArgType<std::decay_t<Arg>>::type::java_type;
+        using java_result_type = typename ArgType<std::decay_t<Result>>::type::java_type;
 
         static native_type native_value(JNIEnv* env, java_type obj)
         {
@@ -91,7 +91,7 @@ namespace javabind
                     }
 
                     if constexpr (!std::is_same_v<Result, void>) {
-                        auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
+                        auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<std::decay_t<Arg>>::type::java_value(env, arg));
                         if constexpr (std::is_same_v<decltype(ret), jobject>) {
                             // ensure proper deallocation for jobject
                             LocalObjectRef res = LocalObjectRef(env, ret);
@@ -109,7 +109,7 @@ namespace javabind
                         }
                     }
                     else {
-                        WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<Arg>::type::java_value(env, arg));
+                        WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<std::decay_t<Arg>>::type::java_value(env, arg));
                         if (env->ExceptionCheck()) {
                             throw JavaException(env);
                         }
@@ -366,7 +366,7 @@ namespace javabind
         using native_type = std::function<void(Arg)>;
 
         constexpr static std::string_view class_name = "java.util.function.Consumer";
-        constexpr static std::string_view java_name = GenericTraits<class_name, Arg>::java_name;
+        constexpr static std::string_view java_name = GenericTraits<class_name, std::decay_t<Arg>>::java_name;
         constexpr static std::string_view sig = "Ljava/util/function/Consumer;";
         constexpr static std::string_view native_class_path = "hu/info/hunyadi/javabind/NativeConsumer";
 
