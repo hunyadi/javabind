@@ -130,6 +130,10 @@ public class TestJavaBind {
         Residence budapest = new Residence("Hungary", "Budapest");
         Residence vienna = new Residence("Austria", "Wien");
         try (Person person = Person.create("Alma", budapest)) {
+            assert person.getName().equals("Alma");
+            person.setName("Dalma");
+            assert person.getName().equals("Dalma");
+            
             assert person.getResidence().getCity().equals("Budapest");
             person.setResidence(vienna);
             assert person.getResidence().getCity().equals("Wien");
