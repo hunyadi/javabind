@@ -9,6 +9,10 @@ public class Person extends NativeObject {
 
     public native void close();
 
+    public native String getName();
+
+    public native void setName(String name);
+
     public native Residence getResidence();
 
     public native void setResidence(Residence residence);

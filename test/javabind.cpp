@@ -354,10 +354,13 @@ class Person
 {
     std::string name;
     Residence residence;
+
 public:
     Person() = default;
     Person(const std::string& n) : name(n) {}
     Person(const std::string& n, const Residence& r) : name(n), residence(r) {}
+    const std::string& get_name() const { return name; }
+    void set_name(const std::string& n) { name = n; }
     Residence get_residence() const { return residence; }
     void set_residence(const Residence& r) { residence = r; }
 };
@@ -485,6 +488,8 @@ JAVA_EXTENSION_MODULE()
     native_class<Person>()
         .constructor<Person(std::string)>("create")
         .constructor<Person(std::string, Residence)>("create")
+        .function<&Person::get_name>("getName")
+        .function<&Person::set_name>("setName")
         .function<&Person::get_residence>("getResidence")
         .function<&Person::set_residence>("setResidence")
         ;
