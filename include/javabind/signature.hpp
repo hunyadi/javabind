@@ -11,6 +11,7 @@
 #pragma once
 #include "type.hpp"
 #include "string.hpp"
+#include <type_traits>
 
 namespace javabind
 {
@@ -38,14 +39,14 @@ namespace javabind
 
         constexpr static std::string_view comma = ", ";
         constexpr static std::string_view param_sig = join_v<ArgType<Args>::type::sig...>;
-        constexpr static std::string_view return_sig = ArgType<R>::type::sig;
+        constexpr static std::string_view return_sig = ArgType<std::decay_t<R>>::type::sig;
 
     public:
         /** Java signature string used internally for type lookup. */
         constexpr static std::string_view sig = callable_sig<param_sig, return_sig>::value;
 
         constexpr static std::string_view param_display = join_sep_v<comma, ArgType<Args>::type::java_name...>;
-        constexpr static std::string_view return_display = ArgType<R>::type::java_name;
+        constexpr static std::string_view return_display = ArgType<std::decay_t<R>>::type::java_name;
     };
 
     /**

@@ -105,7 +105,7 @@ namespace javabind
     struct MemberAdapter
     {
         template <typename R>
-        using java_t = typename ArgType<R>::type::java_type;
+        using java_t = typename ArgType<std::decay_t<R>>::type::java_type;
 
         using result_type = decltype((std::declval<T>().*func)(std::declval<Args>()...));
 
@@ -123,7 +123,7 @@ namespace javabind
                 }
                 if constexpr (!std::is_same_v<result_type, void>) {
                     auto&& result = (ptr->*func)(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
-                    return ArgType<result_type>::type::java_value(env, std::move(result));
+                    return ArgType<std::decay_t<result_type>>::type::java_value(env, std::move(result));
                 }
                 else {
                     (ptr->*func)(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
