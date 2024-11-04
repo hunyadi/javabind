@@ -184,10 +184,10 @@ static void java_termination_impl(JavaVM* vm)
 }
 
 #define DECLARE_RECORD_CLASS(record_type, java_class_qualifier) \
-    template <> struct ::javabind::ClassTraits<record_type> { \
+    template <> struct javabind::ClassTraits<record_type> { \
         constexpr static std::string_view class_name = java_class_qualifier; \
     }; \
-    template <> struct ::javabind::ArgType<record_type> { \
+    template <> struct javabind::ArgType<record_type> { \
         using type = ::javabind::RecordClassJavaType<record_type>; \
     };
 
@@ -196,10 +196,10 @@ static void java_termination_impl(JavaVM* vm)
 // only static methods exposed to native code.
 //
 #define DECLARE_STATIC_CLASS(static_type, java_class_qualifier) \
-    template <> struct ::javabind::ClassTraits<static_type> { \
+    template <> struct javabind::ClassTraits<static_type> { \
         constexpr static std::string_view class_name = java_class_qualifier; \
     }; \
-    template <> struct ::javabind::ArgType<static_type> { \
+    template <> struct javabind::ArgType<static_type> { \
         using type = ::javabind::StaticClassJavaType<static_type>; \
     };
 
@@ -208,10 +208,10 @@ static void java_termination_impl(JavaVM* vm)
 // This object lives primarily in the native code space, and exposed to Java as an opaque handle.
 //
 #define DECLARE_NATIVE_CLASS(native_type, java_class_qualifier) \
-    template <> struct ::javabind::ClassTraits<native_type> { \
+    template <> struct javabind::ClassTraits<native_type> { \
         constexpr static std::string_view class_name = java_class_qualifier; \
     }; \
-    template <> struct ::javabind::ArgType<native_type> { \
+    template <> struct javabind::ArgType<native_type> { \
         using type = ::javabind::NativeClassJavaType<native_type>; \
     };
 

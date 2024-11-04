@@ -13,6 +13,7 @@
 #include "type.hpp"
 #include "string.hpp"
 #include "view.hpp"
+#include <cstdint>
 #include <vector>
 
 namespace javabind
