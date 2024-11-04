@@ -32,13 +32,14 @@ namespace javabind
             return *ptr;
         }
 
-        static jobject java_value(JNIEnv* env, T&& native_object)
+        template<typename U>
+        static jobject java_value(JNIEnv* env, U&& native_object)
         {
             // instantiate native object using copy or move constructor
-            T* ptr = new T(std::forward<T>(native_object));
+            T* ptr = new T(std::forward<U>(native_object));
 
             // instantiate Java object by skipping constructor
-            LocalClassRef objClass(env, ClassTraits<T>::class_name);
+            LocalClassRef objClass(env, NativeClassJavaType<T>::class_path);
             jobject obj = env->AllocObject(objClass.ref());
             if (obj == nullptr) {
                 throw JavaException(env);
@@ -46,7 +47,7 @@ namespace javabind
 
             // store native pointer in Java object field
             Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig);
-            ArgType<T*>::java_set_field_value(env, obj, field, ptr);
+            ArgType<T*>::type::java_set_field_value(env, obj, field, ptr);
 
             return obj;
         }
