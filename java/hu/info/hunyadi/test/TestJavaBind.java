@@ -100,6 +100,8 @@ public class TestJavaBind {
         StaticSample.get_int_consumer().accept(23);
         StaticSample.get_long_consumer().accept(1989l);
         StaticSample.get_double_consumer().accept(3.14);
+        StaticSample.get_person_ref_consumer().accept(Person.create("Bert"));
+        StaticSample.get_person_const_ref_consumer().accept(Person.create("Ernie"));
 
         try {
             StaticSample.get_string_to_int_function().applyAsInt("abcd");
@@ -133,10 +135,15 @@ public class TestJavaBind {
             assert person.getName().equals("Alma");
             person.setName("Dalma");
             assert person.getName().equals("Dalma");
-            
+
             assert person.getResidence().getCity().equals("Budapest");
             person.setResidence(vienna);
             assert person.getResidence().getCity().equals("Wien");
+
+            person.setChildren(List.of(Person.create("Bela"), Person.create("Cecil")));
+            assert person.getChildren().size() == 2;
+            assert person.getChildren().get(0).getName().equals("Bela");
+            assert person.getChildren().get(1).getName().equals("Cecil");
         }
         System.out.println("PASS: getters and setters with record class");
 

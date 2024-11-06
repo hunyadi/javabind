@@ -44,7 +44,7 @@ namespace javabind
         T get(std::size_t i) const
         {
             LocalObjectRef listElement(env, env->CallObjectMethod(javaList, getFunc.ref(), static_cast<jint>(i)));
-            return ArgType<T>::type::native_value(env, listElement.ref());
+            return arg_type_t<T>::native_value(env, listElement.ref());
         }
 
     private:
@@ -74,7 +74,7 @@ namespace javabind
         T get_next() const
         {
             LocalObjectRef element(env, env->CallObjectMethod(setIterator.ref(), nextFunc.ref()));
-            using java_elem_type = typename ArgType<T>::type;
+            using java_elem_type = arg_type_t<T>;
             return java_elem_type::native_value(env, static_cast<typename java_elem_type::java_type>(element.ref()));
         }
 
@@ -149,8 +149,8 @@ namespace javabind
             LocalObjectRef javaKey(env, env->CallObjectMethod(entry.ref(), getKeyFunc.ref()));
             LocalObjectRef javaValue(env, env->CallObjectMethod(entry.ref(), getValueFunc.ref()));
 
-            using java_key_type = typename ArgType<K>::type;
-            using java_value_type = typename ArgType<V>::type;
+            using java_key_type = arg_type_t<K>;
+            using java_value_type = arg_type_t<V>;
 
             auto nativeKey = java_key_type::native_value(env, static_cast<typename java_key_type::java_type>(javaKey.ref()));
             auto nativeValue = java_value_type::native_value(env, static_cast<typename java_value_type::java_type>(javaValue.ref()));
@@ -276,7 +276,7 @@ namespace javabind
             Method addFunc = arrayListClass.getMethod("add", FunctionTraits<bool(object)>::sig);
 
             for (auto&& element : nativeList) {
-                LocalObjectRef arrayListElement(env, ArgType<T>::type::java_value(env, element));
+                LocalObjectRef arrayListElement(env, arg_type_t<T>::java_value(env, element));
                 env->CallBooleanMethod(arrayList, addFunc.ref(), arrayListElement.ref());
             }
             return arrayList;
@@ -319,7 +319,7 @@ namespace javabind
             }
 
             for (auto&& item : nativeSet) {
-                LocalObjectRef element(env, ArgType<element_type>::type::java_value(env, item));
+                LocalObjectRef element(env, arg_type_t<element_type>::java_value(env, item));
                 env->CallBooleanMethod(javaSet, addFunc.ref(), element.ref());
             }
             return javaSet;
@@ -372,8 +372,8 @@ namespace javabind
             }
 
             for (auto&& item : nativeMap) {
-                LocalObjectRef key(env, ArgType<key_type>::type::java_value(env, item.first));
-                LocalObjectRef value(env, ArgType<value_type>::type::java_value(env, item.second));
+                LocalObjectRef key(env, arg_type_t<key_type>::java_value(env, item.first));
+                LocalObjectRef value(env, arg_type_t<value_type>::java_value(env, item.second));
                 env->CallObjectMethod(javaMap, putFunc.ref(), key.ref(), value.ref());
             }
             return javaMap;

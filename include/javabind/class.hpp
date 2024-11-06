@@ -27,8 +27,8 @@ namespace javabind
         {
             // look up field that stores native pointer
             LocalClassRef cls(env, obj);
-            Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
-            T* ptr = ArgType<T*>::native_field_value(env, obj, field);
+            Field field = cls.getField("nativePointer", arg_type_t<T*>::sig);
+            T* ptr = arg_type_t<T*>::native_field_value(env, obj, field);
             return *ptr;
         }
 
@@ -46,8 +46,8 @@ namespace javabind
             }
 
             // store native pointer in Java object field
-            Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig);
-            ArgType<T*>::type::java_set_field_value(env, obj, field, ptr);
+            Field field = objClass.getField("nativePointer", arg_type_t<T*>::sig);
+            arg_type_t<T*>::java_set_field_value(env, obj, field, ptr);
 
             return obj;
         }

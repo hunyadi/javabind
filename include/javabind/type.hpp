@@ -29,4 +29,7 @@ namespace javabind
     {
         static_assert(fail<T>::value, "Unrecognized type detected, ensure that all involved argument types have been declared as a binding type with DECLARE_*_CLASS.");
     };
+
+    template <typename T>
+    using arg_type_t = typename ArgType<std::remove_cv_t<std::remove_reference_t<T>>>::type;
 }

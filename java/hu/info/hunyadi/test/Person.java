@@ -16,4 +16,8 @@ public class Person extends NativeObject {
     public native Residence getResidence();
 
     public native void setResidence(Residence residence);
+
+    public native java.util.List<hu.info.hunyadi.test.Person> getChildren();
+
+    public native void setChildren(java.util.List<Person> children);
 }

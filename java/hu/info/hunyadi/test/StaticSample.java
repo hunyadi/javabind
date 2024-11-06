@@ -140,6 +140,10 @@ public class StaticSample {
 
     public static native DoubleConsumer get_double_consumer();
 
+    public static native java.util.function.Consumer<Person> get_person_ref_consumer();
+
+    public static native java.util.function.Consumer<Person> get_person_const_ref_consumer();
+
     public static native Rectangle pass_record(Rectangle rect);
 
     public static native PrimitiveRecord transform_record(PrimitiveRecord rec);

@@ -10,6 +10,7 @@
 
 #include <javabind/javabind.hpp>
 #include <charconv>
+#include <vector>
 
 template <typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const std::pair<K, V>& pair)
@@ -298,10 +299,11 @@ struct StaticSample
         return
             [](const std::string& str)
             {
-                char* ptr;
-                double val = strtod(str.data(), &ptr);
-                if (ptr != str.data() + str.size()) {
-                    throw std::runtime_error("strtod");
+                std::istringstream iss(str);
+                double val;
+                iss >> val;
+                if (iss.fail() || !iss.eof()) {
+                    throw std::runtime_error("istringstream");
                 }
                 return val;
             };
@@ -354,16 +356,27 @@ class Person
 {
     std::string name;
     Residence residence;
+    std::vector<Person> children;
 
 public:
     Person() = default;
     Person(const std::string& n) : name(n) {}
     Person(const std::string& n, const Residence& r) : name(n), residence(r) {}
+
     const std::string& get_name() const { return name; }
     void set_name(const std::string& n) { name = n; }
+
     Residence get_residence() const { return residence; }
     void set_residence(const Residence& r) { residence = r; }
+
+    const std::vector<Person>& get_children() const { return children; }
+    void set_children(std::vector<Person> c) { children = std::move(c); }
 };
+
+std::ostream& operator<<(std::ostream& os, const Person& person)
+{
+    return os << "{" << person.get_name() << "}";
+}
 
 DECLARE_NATIVE_CLASS(Sample, "hu.info.hunyadi.test.Sample");
 DECLARE_RECORD_CLASS(Rectangle, "hu.info.hunyadi.test.Rectangle");
@@ -471,6 +484,8 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::get_consumer<int32_t>>("get_int_consumer")
         .function<StaticSample::get_consumer<int64_t>>("get_long_consumer")
         .function<StaticSample::get_consumer<double>>("get_double_consumer")
+        .function<StaticSample::get_consumer<Person&>>("get_person_ref_consumer")
+        .function<StaticSample::get_consumer<const Person&>>("get_person_const_ref_consumer")
 
         // record class
         .function<StaticSample::pass_record>("pass_record")
@@ -492,6 +507,8 @@ JAVA_EXTENSION_MODULE()
         .function<&Person::set_name>("setName")
         .function<&Person::get_residence>("getResidence")
         .function<&Person::set_residence>("setResidence")
+        .function<&Person::get_children>("getChildren")
+        .function<&Person::set_children>("setChildren")
         ;
 
     record_class<Residence>()
