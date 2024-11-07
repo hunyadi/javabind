@@ -19,16 +19,16 @@ namespace javabind
     template <typename R, typename T>
     struct CallbackHandler
     {
-        using arg_type = typename ArgType<T>::type::java_type;
-        using return_type = typename ArgType<R>::type::java_type;
+        using arg_type = typename arg_type_t<T>::java_type;
+        using return_type = typename arg_type_t<R>::java_type;
         using callback_type = NativeCallback<return_type, arg_type>;
 
         static return_type invoke(JNIEnv* env, jobject obj, arg_type arg)
         {
             try {
                 LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<callback_type*>::type::sig);
-                callback_type* ptr = ArgType<callback_type*>::type::native_field_value(env, obj, field);
+                Field field = cls.getField("nativePointer", arg_type_t<callback_type*>::sig);
+                callback_type* ptr = arg_type_t<callback_type*>::native_field_value(env, obj, field);
                 return ptr->invoke(env, arg);
             } catch (JavaException& ex) {
                 env->Throw(ex.innerException());
@@ -68,7 +68,7 @@ namespace javabind
                 return *this;
             }
 
-            using callback_type = typename ArgType<std::function<R(T)>>::type;
+            using callback_type = arg_type_t<std::function<R(T)>>;
 
             LocalClassRef cls(env, callback_type::native_class_path, std::nothrow);
             if (cls.ref() == nullptr) {

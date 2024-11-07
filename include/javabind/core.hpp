@@ -405,24 +405,35 @@ namespace javabind
      * Reserved for use by the interoperability framework.
      */
     template <typename T>
-    struct JavaPointerType : PrimitiveJavaType<JavaPointerType<T>, std::intptr_t, jlong>
+    struct JavaPointerType
     {
+        using native_type = T*;
+        using java_type = jlong;
+
         static_assert(sizeof(void*) == sizeof(jlong), "C++ pointer must be assignable to Java long type.");
 
         constexpr static std::string_view class_name = "java.lang.Long";
         constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";
 
-        using base_type = PrimitiveJavaType<JavaPointerType<T>, std::intptr_t, jlong>;
+        static native_type native_value(JNIEnv*, java_type value)
+        {
+            return reinterpret_cast<native_type>(value);
+        }
+
+        static java_type java_value(JNIEnv*, native_type value)
+        {
+            return reinterpret_cast<java_type>(value);
+        }
 
         static T* native_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
-            return reinterpret_cast<T*>(base_type::native_value(env, env->GetLongField(obj, fld.ref())));
+            return native_value(env, env->GetLongField(obj, fld.ref()));
         }
 
-        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, T* value)
+        static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
-            env->SetLongField(obj, fld.ref(), base_type::java_value(env, reinterpret_cast<intptr_t>(value)));
+            env->SetLongField(obj, fld.ref(), java_value(env, value));
         }
     };
 
@@ -605,20 +616,20 @@ namespace javabind
 
         constexpr static std::string_view array_type_prefix = "[";
         constexpr static std::string_view array_type_suffix = "]";
-        constexpr static std::string_view java_name = join_v<ArgType<T>::type::java_name, array_type_prefix, array_type_suffix>;
-        constexpr static std::string_view sig = join_v<array_type_prefix, ArgType<T>::type::sig>;
+        constexpr static std::string_view java_name = join_v<arg_type_t<T>::java_name, array_type_prefix, array_type_suffix>;
+        constexpr static std::string_view sig = join_v<array_type_prefix, arg_type_t<T>::sig>;
 
         static native_type native_value(JNIEnv* env, jarray arr)
         {
             std::size_t len = env->GetArrayLength(arr);
             native_type vec(len);
-            ArgType<T>::type::native_array_value(env, arr, vec.data(), vec.size());
+            arg_type_t<T>::native_array_value(env, arr, vec.data(), vec.size());
             return vec;
         }
 
         static jarray java_value(JNIEnv* env, const native_type& vec)
         {
-            return ArgType<T>::type::java_array_value(env, vec.data(), vec.size());
+            return arg_type_t<T>::java_array_value(env, vec.data(), vec.size());
         }
     };
 
@@ -684,8 +695,8 @@ namespace javabind
 
         constexpr static std::string_view array_type_prefix = "[";
         constexpr static std::string_view array_type_suffix = "]";
-        constexpr static std::string_view java_name = join_v<ArgType<T>::type::java_name, array_type_prefix, array_type_suffix>;
-        constexpr static std::string_view sig = join_v<array_type_prefix, ArgType<T>::type::sig>;
+        constexpr static std::string_view java_name = join_v<arg_type_t<T>::java_name, array_type_prefix, array_type_suffix>;
+        constexpr static std::string_view sig = join_v<array_type_prefix, arg_type_t<T>::sig>;
 
         static wrapped_array_view<T> native_value(JNIEnv* env, jarray arr)
         {
@@ -694,7 +705,7 @@ namespace javabind
 
         static jarray java_value(JNIEnv* env, const native_type& vec)
         {
-            return ArgType<T>::type::java_array_value(env, vec.data(), vec.size());
+            return arg_type_t<T>::java_array_value(env, vec.data(), vec.size());
         }
     };
 
@@ -711,7 +722,7 @@ namespace javabind
     template <> struct ArgType<std::string_view> { using type = JavaUTF8StringViewType; };
     template <> struct ArgType<std::u16string_view> { using type = JavaUTF16StringViewType; };
     template <typename T> struct ArgType<T*> { using type = JavaPointerType<T>; };
-    template <typename T> struct ArgType<boxed<T>> { using type = JavaBoxedType<typename ArgType<T>::type>; };
+    template <typename T> struct ArgType<boxed<T>> { using type = JavaBoxedType<arg_type_t<T>>; };
     template <> struct ArgType<object> { using type = JavaObjectType; };
 
     template <> struct ArgType<std::vector<bool>> { using type = JavaBooleanArrayType; };

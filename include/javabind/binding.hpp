@@ -40,17 +40,17 @@ namespace javabind
             static_assert(std::is_member_object_pointer_v<decltype(member)>, "The template argument is expected to be a member variable pointer type.");
             using member_type = typename FieldType<decltype(member)>::type;
 
-            auto&& bindings = FieldBindings::value[ArgType<T>::type::sig];
+            auto&& bindings = FieldBindings::value[arg_type_t<T>::sig];
             bindings.push_back({
                 name,
-                ArgType<member_type>::type::sig,
+                arg_type_t<member_type>::sig,
                 [](JNIEnv* env, jobject obj, Field& fld, const void* native_object_ptr) {
                     const T* native_object = reinterpret_cast<const T*>(native_object_ptr);
-                    ArgType<member_type>::type::java_set_field_value(env, obj, fld, native_object->*member);
+                    arg_type_t<member_type>::java_set_field_value(env, obj, fld, native_object->*member);
                 },
                 [](JNIEnv* env, jobject obj, Field& fld, void* native_object_ptr) {
                     T* native_object = reinterpret_cast<T*>(native_object_ptr);
-                    native_object->*member = ArgType<member_type>::type::native_field_value(env, obj, fld);
+                    native_object->*member = arg_type_t<member_type>::native_field_value(env, obj, fld);
                 }
                 });
             return *this;
@@ -67,7 +67,7 @@ namespace javabind
     struct Adapter
     {
         template <typename T>
-        using java_t = typename ArgType<T>::type::java_type;
+        using java_t = typename arg_type_t<T>::java_type;
 
         using result_type = decltype(func(std::declval<Args>()...));
 
@@ -75,11 +75,11 @@ namespace javabind
         {
             try {
                 if constexpr (!std::is_same_v<result_type, void>) {
-                    auto&& result = func(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
-                    return static_cast<java_t<result_type>>(ArgType<result_type>::type::java_value(env, std::move(result)));
+                    auto&& result = func(arg_type_t<Args>::native_value(env, args)...);
+                    return static_cast<java_t<result_type>>(arg_type_t<result_type>::java_value(env, std::move(result)));
                 }
                 else {
-                    func(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
+                    func(arg_type_t<Args>::native_value(env, args)...);
                 }
             } catch (JavaException& ex) {
                 env->Throw(ex.innerException());
@@ -105,7 +105,7 @@ namespace javabind
     struct MemberAdapter
     {
         template <typename R>
-        using java_t = typename ArgType<std::decay_t<R>>::type::java_type;
+        using java_t = typename arg_type_t<R>::java_type;
 
         using result_type = decltype((std::declval<T>().*func)(std::declval<Args>()...));
 
@@ -114,19 +114,19 @@ namespace javabind
             try {
                 // look up field that stores native pointer
                 LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
-                T* ptr = ArgType<T*>::type::native_field_value(env, obj, field);
+                Field field = cls.getField("nativePointer", arg_type_t<T*>::sig);
+                T* ptr = arg_type_t<T*>::native_field_value(env, obj, field);
 
                 // invoke native function
                 if (!ptr) {
                     throw std::logic_error(msg() << "Object " << ClassTraits<T>::class_name << " has already been disposed of.");
                 }
                 if constexpr (!std::is_same_v<result_type, void>) {
-                    auto&& result = (ptr->*func)(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
-                    return ArgType<std::decay_t<result_type>>::type::java_value(env, std::move(result));
+                    auto&& result = (ptr->*func)(arg_type_t<Args>::native_value(env, args)...);
+                    return arg_type_t<result_type>::java_value(env, std::move(result));
                 }
                 else {
-                    (ptr->*func)(ArgType<std::decay_t<Args>>::type::native_value(env, args)...);
+                    (ptr->*func)(arg_type_t<Args>::native_value(env, args)...);
                 }
 
             } catch (JavaException& ex) {
@@ -166,13 +166,13 @@ namespace javabind
     struct CreateObjectAdapter
     {
         template <typename R>
-        using java_t = typename ArgType<R>::type::java_type;
+        using java_t = typename arg_type_t<R>::java_type;
 
         static jobject invoke(JNIEnv* env, jclass cls, java_t<Args>... args)
         {
             try {
                 // instantiate native object
-                T* ptr = new T(ArgType<Args>::type::native_value(env, args)...);
+                T* ptr = new T(arg_type_t<Args>::native_value(env, args)...);
 
                 // instantiate Java object by skipping constructor
                 LocalClassRef objClass(env, cls);
@@ -182,8 +182,8 @@ namespace javabind
                 }
 
                 // store native pointer in Java object field
-                Field field = objClass.getField("nativePointer", ArgType<T*>::type::sig);
-                ArgType<T*>::type::java_set_field_value(env, obj, field, ptr);
+                Field field = objClass.getField("nativePointer", arg_type_t<T*>::sig);
+                arg_type_t<T*>::java_set_field_value(env, obj, field, ptr);
 
                 return obj;
             } catch (JavaException& ex) {
@@ -208,14 +208,14 @@ namespace javabind
             try {
                 // look up field that stores native pointer
                 LocalClassRef cls(env, obj);
-                Field field = cls.getField("nativePointer", ArgType<T*>::type::sig);
-                T* ptr = ArgType<T*>::type::native_field_value(env, obj, field);
+                Field field = cls.getField("nativePointer", arg_type_t<T*>::sig);
+                T* ptr = arg_type_t<T*>::native_field_value(env, obj, field);
 
                 // release native object
                 delete ptr;
 
                 // prevent accidental duplicate delete
-                ArgType<T*>::type::java_set_field_value(env, obj, field, nullptr);
+                arg_type_t<T*>::java_set_field_value(env, obj, field, nullptr);
             } catch (JavaException& ex) {
                 env->Throw(ex.innerException());
             } catch (std::exception& ex) {

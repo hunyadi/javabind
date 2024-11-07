@@ -57,13 +57,13 @@ namespace javabind
         static native_type native_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
             LocalObjectRef objFieldValue(env, env->GetObjectField(obj, fld.ref()));
-            return ArgType<T>::type::native_value(env, objFieldValue.ref());
+            return arg_type_t<T>::native_value(env, objFieldValue.ref());
         }
 
         static void java_set_field_value(JNIEnv* env, jobject obj, Field& fld, native_type value)
         {
             // use local reference to ensure temporary object is released
-            LocalObjectRef objFieldValue(env, ArgType<T>::type::java_value(env, value));
+            LocalObjectRef objFieldValue(env, arg_type_t<T>::java_value(env, value));
             env->SetObjectField(obj, fld.ref(), objFieldValue.ref());
         }
     };

@@ -38,15 +38,15 @@ namespace javabind
         };
 
         constexpr static std::string_view comma = ", ";
-        constexpr static std::string_view param_sig = join_v<ArgType<Args>::type::sig...>;
-        constexpr static std::string_view return_sig = ArgType<std::decay_t<R>>::type::sig;
+        constexpr static std::string_view param_sig = join_v<arg_type_t<Args>::sig...>;
+        constexpr static std::string_view return_sig = arg_type_t<R>::sig;
 
     public:
         /** Java signature string used internally for type lookup. */
         constexpr static std::string_view sig = callable_sig<param_sig, return_sig>::value;
 
-        constexpr static std::string_view param_display = join_sep_v<comma, ArgType<Args>::type::java_name...>;
-        constexpr static std::string_view return_display = ArgType<std::decay_t<R>>::type::java_name;
+        constexpr static std::string_view param_display = join_sep_v<comma, arg_type_t<Args>::java_name...>;
+        constexpr static std::string_view return_display = arg_type_t<R>::java_name;
     };
 
     /**
@@ -89,7 +89,7 @@ namespace javabind
         constexpr static std::string_view lparen = "<";
         constexpr static std::string_view rparen = ">";
         constexpr static std::string_view sep = ", ";
-        constexpr static std::string_view param_list = join_sep_v<sep, ArgType<Args>::type::java_name...>;
+        constexpr static std::string_view param_list = join_sep_v<sep, arg_type_t<Args>::java_name...>;
 
     public:
         constexpr static std::string_view java_name = join_v<Name, lparen, param_list, rparen>;

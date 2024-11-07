@@ -35,25 +35,25 @@ namespace javabind
 
     template<typename R, typename T>
     struct ForwardingCallback : NativeCallback<
-        typename ArgType<R>::type::java_type,
-        typename ArgType<T>::type::java_type
+        typename arg_type_t<R>::java_type,
+        typename arg_type_t<T>::java_type
     >
     {
         ForwardingCallback(std::function<R(T)>&& func)
             : _func(func)
         {}
 
-        using java_arg_type = typename ArgType<T>::type::java_type;
-        using java_result_type = typename ArgType<R>::type::java_type;
+        using java_arg_type = typename arg_type_t<T>::java_type;
+        using java_result_type = typename arg_type_t<R>::java_type;
 
         java_result_type invoke(JNIEnv* env, java_arg_type arg) override
         {
             if constexpr (!std::is_same_v<R, void>) {
-                auto&& result = _func(ArgType<T>::type::native_value(env, arg));
-                return ArgType<R>::type::java_value(env, std::move(result));
+                auto&& result = _func(arg_type_t<T>::native_value(env, arg));
+                return arg_type_t<R>::java_value(env, std::move(result));
             }
             else {
-                _func(ArgType<T>::type::native_value(env, arg));
+                _func(arg_type_t<T>::native_value(env, arg));
             }
         }
 
@@ -66,8 +66,8 @@ namespace javabind
     {
         using native_type = std::function<Result(Arg)>;
         using java_type = jobject;
-        using java_arg_type = typename ArgType<std::decay_t<Arg>>::type::java_type;
-        using java_result_type = typename ArgType<std::decay_t<Result>>::type::java_type;
+        using java_arg_type = typename arg_type_t<Arg>::java_type;
+        using java_result_type = typename arg_type_t<Result>::java_type;
 
         static native_type native_value(JNIEnv* env, java_type obj)
         {
@@ -91,25 +91,25 @@ namespace javabind
                     }
 
                     if constexpr (!std::is_same_v<Result, void>) {
-                        auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<std::decay_t<Arg>>::type::java_value(env, arg));
+                        auto ret = WrapperType::native_invoke(env, fun.ref(), invoke.ref(), arg_type_t<Arg>::java_value(env, arg));
                         if constexpr (std::is_same_v<decltype(ret), jobject>) {
                             // ensure proper deallocation for jobject
                             LocalObjectRef res = LocalObjectRef(env, ret);
                             if (env->ExceptionCheck()) {
                                 throw JavaException(env);
                             }
-                            return ArgType<Result>::type::native_value(env, static_cast<java_result_type>(res.ref()));
+                            return arg_type_t<Result>::native_value(env, static_cast<java_result_type>(res.ref()));
                         }
                         else {
                             // no special treatment for primitive types
                             if (env->ExceptionCheck()) {
                                 throw JavaException(env);
                             }
-                            return ArgType<Result>::type::native_value(env, ret);
+                            return arg_type_t<Result>::native_value(env, ret);
                         }
                     }
                     else {
-                        WrapperType::native_invoke(env, fun.ref(), invoke.ref(), ArgType<std::decay_t<Arg>>::type::java_value(env, arg));
+                        WrapperType::native_invoke(env, fun.ref(), invoke.ref(), arg_type_t<Arg>::java_value(env, arg));
                         if (env->ExceptionCheck()) {
                             throw JavaException(env);
                         }
@@ -222,7 +222,7 @@ namespace javabind
         static_assert(!std::is_fundamental_v<Arg>, "Argument type cannot be a C++ fundamental type for an object-to-object Java function.");
 
         using native_type = std::function<Result(Arg)>;
-        using java_type = typename ArgType<Arg>::type::java_type;
+        using java_type = typename arg_type_t<Arg>::java_type;
 
         constexpr static std::string_view class_name = "java.util.function.Function";
         constexpr static std::string_view java_name = GenericTraits<class_name, Arg, Result>::java_name;
