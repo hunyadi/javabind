@@ -151,6 +151,7 @@ public class TestJavaBind {
                 .equals(List.of(new Rectangle(1.0, 2.0), new Rectangle(3.0, 4.0)));
         assert StaticSample.pass_ordered_set(Set.of("one", "two", "three")).equals(Set.of("one", "two", "three"));
         assert StaticSample.pass_unordered_set(Set.of("one", "two", "three")).equals(Set.of("one", "two", "three"));
+        assert StaticSample.pass_ordered_set_with_int_key(Set.of(1, 2, 3)).equals(Set.of(1, 2, 3));
 
         Map<String, Rectangle> rectangles = Map.ofEntries(
                 entry("a", new Rectangle(1.0, 2.0)),
@@ -158,6 +159,8 @@ public class TestJavaBind {
                 entry("c", new Rectangle(5.0, 6.0)));
         assert StaticSample.pass_ordered_map(rectangles).equals(rectangles);
         assert StaticSample.pass_unordered_map(rectangles).equals(rectangles);
+        assert StaticSample.pass_ordered_map_with_int_key(Map.of(1, "one", 2, "two", 3, "three")).equals(Map.of(1, "one", 2, "two", 3, "three"));
+        assert StaticSample.pass_ordered_map_with_int_value(Map.of("one", 1, "two", 2, "three", 3)).equals(Map.of("one", 1, "two", 2, "three", 3));
         System.out.println("PASS: collections");
     }
 }

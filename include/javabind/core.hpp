@@ -718,6 +718,7 @@ namespace javabind
     template <> struct ArgType<int64_t> { using type = JavaLongType; };
     template <> struct ArgType<float> { using type = JavaFloatType; };
     template <> struct ArgType<double> { using type = JavaDoubleType; };
+    template <> struct ArgType<std::size_t> { using type = JavaLongType; };
     template <> struct ArgType<std::string> { using type = JavaStringType; };
     template <> struct ArgType<std::string_view> { using type = JavaUTF8StringViewType; };
     template <> struct ArgType<std::u16string_view> { using type = JavaUTF16StringViewType; };
