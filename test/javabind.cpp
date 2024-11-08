@@ -10,6 +10,7 @@
 
 #include <javabind/javabind.hpp>
 #include <charconv>
+#include <optional>
 #include <vector>
 
 template <typename K, typename V>
@@ -74,6 +75,17 @@ template <typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V>& set)
 {
     return write_set(os, set);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& opt)
+{
+    if (opt.has_value()) {
+        return os << "{" << opt.value() << "}";
+    }
+    else {
+        return os << "{nullopt}";
+    }
 }
 
 struct Rectangle
@@ -344,6 +356,13 @@ struct StaticSample
         JAVA_OUTPUT << "pass_collection(" << collection << ")" << std::endl;
         return C(collection.begin(), collection.end());
     }
+
+    template <typename T>
+    static std::optional<T> pass_optional(const std::optional<T>& opt)
+    {
+        JAVA_OUTPUT << "pass_optional(" << opt << ")" << std::endl;
+        return opt;
+    }
 };
 
 struct Residence
@@ -500,8 +519,11 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::set<int>>>("pass_ordered_set_with_int_key")
         .function<StaticSample::pass_collection<std::map<int, std::string>>>("pass_ordered_map_with_int_key")
         .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
-        ;
 
+        // optional
+        .function<StaticSample::pass_optional<Rectangle>>("pass_optional_rectangle")
+        .function<StaticSample::pass_optional<int>>("pass_optional_int")
+        ;
 
     native_class<Person>()
         .constructor<Person(std::string)>("create")
