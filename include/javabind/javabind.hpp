@@ -35,6 +35,7 @@ namespace javabind
         for (auto&& [class_name, bindings] : FunctionBindings::value) {
             std::string simple_class_name;
             std::size_t found = class_name.rfind('/');
+
             if (found != std::string::npos) {
                 simple_class_name = class_name.substr(found + 1);
             }
