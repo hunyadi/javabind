@@ -19,6 +19,9 @@
 
 namespace javabind
 {
+    template<typename T>
+    using boxed_t = std::conditional_t<std::is_arithmetic_v<T>, boxed<T>, T>;
+
     /**
      * Provides an opaque view to a Java list.
      *
@@ -155,7 +158,7 @@ namespace javabind
             auto nativeKey = java_key_type::native_value(env, static_cast<typename java_key_type::java_type>(javaKey.ref()));
             auto nativeValue = java_value_type::native_value(env, static_cast<typename java_value_type::java_type>(javaValue.ref()));
 
-            return map_entry(std::move(nativeKey), std::move(nativeValue));
+            return map_entry<K, V>(std::move(nativeKey), std::move(nativeValue));
         }
 
     private:
@@ -286,16 +289,17 @@ namespace javabind
     /**
      * Converts a native set (e.g. a [set] or [unordered_set]) into a Java Set.
      */
-    template <typename T>
-    struct JavaSetType : AssignableJavaType<T>
+    template <template<typename...> typename S, typename T>
+    struct JavaSetType : AssignableJavaType<S<T>>
     {
-        using native_type = T;
-        using element_type = typename native_type::key_type;
+        using native_type = S<T>;
+        using native_boxed_type = S<boxed_t<T>>;
+        using element_type = typename native_boxed_type::key_type;
         using java_type = jobject;
 
-        constexpr static std::string_view class_name = ClassTraits<native_type>::class_name;
-        constexpr static std::string_view class_path = ClassTraits<native_type>::class_path;
-        constexpr static std::string_view java_name = ClassTraits<native_type>::java_name;
+        constexpr static std::string_view class_name = ClassTraits<native_boxed_type>::class_name;
+        constexpr static std::string_view class_path = ClassTraits<native_boxed_type>::class_path;
+        constexpr static std::string_view java_name = ClassTraits<native_boxed_type>::java_name;
 
         static native_type native_value(JNIEnv* env, java_type javaSet)
         {
@@ -327,27 +331,28 @@ namespace javabind
     };
 
     template <typename T>
-    struct JavaOrderedSetType : JavaSetType<std::set<T>>
+    struct JavaOrderedSetType : JavaSetType<std::set, T>
     {};
 
     template <typename T>
-    struct JavaUnorderedSetType : JavaSetType<std::unordered_set<T>>
+    struct JavaUnorderedSetType : JavaSetType<std::unordered_set, T>
     {};
 
     /**
      * Converts a native dictionary (e.g. a [map] or [unordered_map]) into a Java Map.
      */
-    template <typename T>
-    struct JavaMapType : AssignableJavaType<T>
+    template <template<typename...> typename M, typename K, typename V>
+    struct JavaMapType : AssignableJavaType<M<K, V>>
     {
-        using native_type = T;
-        using key_type = typename native_type::key_type;
-        using value_type = typename native_type::mapped_type;
+        using native_type = M<K, V>;
+        using native_boxed_type = M<boxed_t<K>, boxed_t<V>>;
+        using key_type = typename native_boxed_type::key_type;
+        using value_type = typename native_boxed_type::mapped_type;
         using java_type = jobject;
 
-        constexpr static std::string_view class_name = ClassTraits<native_type>::class_name;
-        constexpr static std::string_view class_path = ClassTraits<native_type>::class_path;
-        constexpr static std::string_view java_name = ClassTraits<native_type>::java_name;
+        constexpr static std::string_view class_name = ClassTraits<native_boxed_type>::class_name;
+        constexpr static std::string_view class_path = ClassTraits<native_boxed_type>::class_path;
+        constexpr static std::string_view java_name = ClassTraits<native_boxed_type>::java_name;
 
         static native_type native_value(JNIEnv* env, java_type javaMap)
         {
@@ -381,11 +386,11 @@ namespace javabind
     };
 
     template <typename K, typename V>
-    struct JavaOrderedMapType : JavaMapType<std::map<K, V>>
+    struct JavaOrderedMapType : JavaMapType<std::map, K, V>
     {};
 
     template <typename K, typename V>
-    struct JavaUnorderedMapType : JavaMapType<std::unordered_map<K, V>>
+    struct JavaUnorderedMapType : JavaMapType<std::unordered_map, K, V>
     {};
 
     template <typename T> struct ArgType<std::vector<T>, std::enable_if_t<!std::is_arithmetic_v<T>>> { using type = JavaListType<T>; };

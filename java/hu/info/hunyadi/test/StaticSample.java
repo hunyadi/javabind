@@ -157,4 +157,10 @@ public class StaticSample {
     public static native Map<String, Rectangle> pass_ordered_map(Map<String, Rectangle> map);
 
     public static native Map<String, Rectangle> pass_unordered_map(Map<String, Rectangle> map);
+
+    public static native Set<Integer> pass_ordered_set_with_int_key(Set<Integer> set);
+
+    public static native java.util.Map<Integer, String> pass_ordered_map_with_int_key(java.util.Map<Integer, String> map);
+
+    public static native java.util.Map<String, Integer> pass_ordered_map_with_int_value(java.util.Map<String, Integer> map);
 }

@@ -497,6 +497,9 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::unordered_set<std::string>>>("pass_unordered_set")
         .function<StaticSample::pass_collection<std::map<std::string, Rectangle>>>("pass_ordered_map")
         .function<StaticSample::pass_collection<std::unordered_map<std::string, Rectangle>>>("pass_unordered_map")
+        .function<StaticSample::pass_collection<std::set<int>>>("pass_ordered_set_with_int_key")
+        .function<StaticSample::pass_collection<std::map<int, std::string>>>("pass_ordered_map_with_int_key")
+        .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
         ;
 
 
