@@ -163,4 +163,8 @@ public class StaticSample {
     public static native java.util.Map<Integer, String> pass_ordered_map_with_int_key(java.util.Map<Integer, String> map);
 
     public static native java.util.Map<String, Integer> pass_ordered_map_with_int_value(java.util.Map<String, Integer> map);
+
+    public static native Rectangle pass_optional_rectangle(Rectangle rectangle);
+
+    public static native Integer pass_optional_int(Integer i);
 }
