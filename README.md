@@ -173,6 +173,7 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::unordered_set<E>` | `java.util.Set<E>` | `java.util.HashSet<E>` |
 | `std::map<K,V>` | `java.util.Map<K,V>` | `java.util.TreeMap<K,V>` |
 | `std::unordered_map<K,V>` | `java.util.Map<K,V>` | `java.util.HashMap<K,V>` |
+| `std::optional<T>` | `T` | `T` |
 | `std::function<R(T)>` | `Function<T,R>` | `NativeFunction<T,R>` implements `Function<T,R>` |
 | `std::function<R(int32_t)>` | `IntFunction<R>` | `NativeIntFunction<R>` implements `IntFunction<R>` |
 | `std::function<R(int64_t)>` | `LongFunction<R>` | `NativeLongFunction<R>` implements `LongFunction<R>` |
@@ -192,6 +193,8 @@ javabind recognizes several widely-used types and marshals them automatically be
 `boxed` is a lightweight C++ wrapper defined by the library to match Java boxed types such as `java.lang.Integer`. `boxed` has no C++ run-time overhead, it is only used for disambiguation.
 
 Collection types are copied between C++ and Java.
+
+Optionals are converted to a null-value in Java when they don't have a value in C++. Null-values are converted to an empty optional in C++.
 
 C++ types `basic_string_view<T>` translate to JNI calls `GetPrimitiveArrayCritical` and `ReleasePrimitiveArrayCritical` to get a direct pointer to the memory managed by the Java Virtual Machine (JVM). This imposes [significant restrictions](https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#GetPrimitiveArrayCritical_ReleasePrimitiveArrayCritical):
 
