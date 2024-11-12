@@ -34,14 +34,18 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaOptional)
         {
-            if (javaOptional == nullptr) return std::nullopt;
-            return arg_type_t<boxed_t<T>>::native_value(env, static_cast<typename arg_type_t<boxed_t<T>>::java_type>(javaOptional));
+            if (javaOptional == nullptr)
+                return std::nullopt;
+            else
+                return arg_type_t<boxed_t<T>>::native_value(env, static_cast<typename arg_type_t<boxed_t<T>>::java_type>(javaOptional));
         }
 
         static java_type java_value(JNIEnv* env, const native_type& nativeOptional)
         {
-            if (!nativeOptional.has_value()) return nullptr;
-            return arg_type_t<boxed_t<T>>::java_value(env, nativeOptional.value());
+            if (!nativeOptional.has_value())
+                return nullptr;
+            else
+                return arg_type_t<boxed_t<T>>::java_value(env, nativeOptional.value());
         }
     };
 
