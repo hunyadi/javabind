@@ -162,5 +162,12 @@ public class TestJavaBind {
         assert StaticSample.pass_ordered_map_with_int_key(Map.of(1, "one", 2, "two", 3, "three")).equals(Map.of(1, "one", 2, "two", 3, "three"));
         assert StaticSample.pass_ordered_map_with_int_value(Map.of("one", 1, "two", 2, "three", 3)).equals(Map.of("one", 1, "two", 2, "three", 3));
         System.out.println("PASS: collections");
+
+        assert StaticSample.pass_optional_rectangle(null) == null;
+        assert StaticSample.pass_optional_rectangle(new Rectangle(1.0, 2.0)).equals(new Rectangle(1.0, 2.0));
+        assert StaticSample.pass_optional_int(null) == null;
+        assert StaticSample.pass_optional_int(23).equals(23);
+        System.out.println("PASS: optional");
+
     }
 }
