@@ -16,6 +16,7 @@
 #include "function.hpp"
 #include "collection.hpp"
 #include "optional.hpp"
+#include "enum.hpp"
 
 #include "exception.hpp"
 #include "message.hpp"
@@ -373,5 +374,47 @@ namespace javabind
             );
             return *this;
         }
+    };
+
+    struct EnumBinding {
+        std::vector<std::string_view> names;
+
+        void add(std::string_view name)
+        {
+            if (!contains(name)) {
+                names.push_back(name);
+            }
+        }
+
+        bool contains(std::string_view name) const
+        {
+            return std::find(names.begin(), names.end(), name) != names.end();
+        }
+    };
+
+    struct EnumBindings {
+        inline static std::map< std::string_view, EnumBinding > value;
+    };
+
+    /**
+     * Represents an enum class in Java.
+     */
+    template <typename T>
+    struct enum_class
+    {
+        enum_class()
+        {
+            EnumBindings::value.emplace(arg_type_t<T>::class_name, EnumBinding {});
+        }
+
+        enum_class<T>& value(T native_value, std::string_view java_name)
+        {
+            EnumBindings::value.at(arg_type_t<T>::class_name).add(java_name);
+            EnumValues<T>::bind(native_value, java_name);
+            return *this;
+        }
+
+        enum_class(const enum_class&) = delete;
+        enum_class(enum_class&&) = delete;
     };
 }
