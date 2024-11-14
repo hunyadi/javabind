@@ -233,8 +233,11 @@ static void java_termination_impl(JavaVM* vm)
 // Establishes a mapping between a native enum and a Java enum class.
 //
 #define DECLARE_ENUM_CLASS(native_type, java_class_qualifier) \
-    template <> struct javabind::EnumTraits<native_type> { \
+    template <> struct javabind::ClassTraits<native_type> { \
         constexpr static std::string_view class_name = java_class_qualifier; \
+    }; \
+    template <> struct javabind::ArgType<native_type> { \
+        using type = ::javabind::EnumClassJavaType<native_type>; \
     };
 
 //

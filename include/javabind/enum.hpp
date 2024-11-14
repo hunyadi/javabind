@@ -53,18 +53,7 @@ namespace javabind
     };
 
     template <typename T>
-    struct EnumTraits;
-
-    template <typename T>
-    struct ClassTraits<T, std::enable_if_t<std::is_enum_v<T>>>
-    {
-        constexpr static std::string_view class_name = EnumTraits<T>::class_name;
-        constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
-        constexpr static std::string_view java_name = class_name;
-    };
-
-    template <typename T>
-    struct JavaEnumType : AssignableJavaType<T>
+    struct EnumClassJavaType : AssignableJavaType<T>
     {
         using native_type = T;
         using java_type = jobject;
@@ -104,11 +93,5 @@ namespace javabind
 
             return EnumValues<native_type>::java_name(nativeEnumValue);
         }
-    };
-
-    template<typename T>
-    struct ArgType<T, std::enable_if_t<std::is_enum_v<T>>>
-    {
-        using type = JavaEnumType<T>;
     };
 }

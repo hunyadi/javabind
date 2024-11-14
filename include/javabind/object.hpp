@@ -19,7 +19,7 @@ namespace javabind
      * Stores information about a native type and Java class binding.
      * Typically extended by DECLARE_NATIVE_CLASS or DECLARE_STATIC_CLASS via template specialization.
      */
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct ClassTraits
     {};
 
