@@ -56,21 +56,22 @@ namespace javabind
     struct EnumTraits;
 
     template <typename T>
+    struct ClassTraits<T, std::enable_if_t<std::is_enum_v<T>>>
+    {
+        constexpr static std::string_view class_name = EnumTraits<T>::class_name;
+        constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
+        constexpr static std::string_view java_name = class_name;
+    };
+
+    template <typename T>
     struct JavaEnumType : AssignableJavaType<T>
     {
         using native_type = T;
         using java_type = jobject;
 
-        constexpr static std::string_view class_name = EnumTraits<T>::class_name;
-        constexpr static std::string_view class_path = replace_v<class_name, '.', '/'>;
-        constexpr static std::string_view java_name = class_name;
-
-        constexpr static std::string_view class_type_prefix = "L";
-        constexpr static std::string_view class_type_suffix = ";";
-        constexpr static std::string_view sig = join_v<class_type_prefix, class_path, class_type_suffix>;
-
-        constexpr static std::string_view values_sig_prefix = "()[";
-        constexpr static std::string_view values_sig = join_v<values_sig_prefix, sig>;
+        using AssignableJavaType<T>::class_path;
+        using AssignableJavaType<T>::class_name;
+        using AssignableJavaType<T>::sig;
 
         static native_type native_value(JNIEnv* env, java_type javaEnumValue)
         {
