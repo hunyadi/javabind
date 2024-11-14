@@ -16,6 +16,7 @@ The following C++ features can be mapped to Java:
 * Instance attributes and static attributes
 * Arbitrary exception types
 * STL containers
+* Enums and enum classes
 
 Furthermore, the following Java features are seamlessly exposed to C++:
 
@@ -201,6 +202,44 @@ C++ types `basic_string_view<T>` translate to JNI calls `GetPrimitiveArrayCritic
 > After calling `GetPrimitiveArrayCritical`, the native code should not run for an extended period of time before it calls `ReleasePrimitiveArrayCritical`. We must treat the code inside this pair of functions as running in a "critical region." Inside a critical region, native code must not call other JNI functions, or any system call that may cause the current thread to block and wait for another Java thread. (For example, the current thread must not call read on a stream being written by another Java thread.)
 
 The C++ type `u16string_view` translates to JNI calls `GetStringCritical` and `ReleaseStringCritical`, which entail similar restrictions as `GetPrimitiveArrayCritical` and `ReleasePrimitiveArrayCritical`.
+
+## Enums
+
+javabind can expose C++ enums to Java.
+
+To define a C++ enum that needs to be exported to Java:
+
+```cpp
+enum class FooBar
+{
+    Foo,
+    Bar
+};
+
+DECLARE_ENUM_CLASS(o, "hu.info.hunyadi.test.FooBar");
+
+JAVA_EXTENSION_MODULE()
+{
+    using namespace javabind;
+    // ...
+    enum_class<FooBar>()
+        .value(FooBar::Foo, "Foo")
+        .value(FooBar::Bar, "Bar")
+        ;
+}
+```
+
+The enum that needs to be defined in Java:
+
+```java
+package hu.info.hunyadi.test;
+
+public enum FooBar {
+    Foo,
+    Bar
+}
+
+```
 
 ## Exceptions
 
