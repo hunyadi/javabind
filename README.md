@@ -16,7 +16,7 @@ The following C++ features can be mapped to Java:
 * Instance attributes and static attributes
 * Arbitrary exception types
 * STL containers
-* Enums and enum classes
+* Enumeration types
 
 Furthermore, the following Java features are seamlessly exposed to C++:
 
@@ -203,42 +203,41 @@ C++ types `basic_string_view<T>` translate to JNI calls `GetPrimitiveArrayCritic
 
 The C++ type `u16string_view` translates to JNI calls `GetStringCritical` and `ReleaseStringCritical`, which entail similar restrictions as `GetPrimitiveArrayCritical` and `ReleasePrimitiveArrayCritical`.
 
-## Enums
+## Enumeration types
 
-javabind can expose C++ enums to Java.
+javabind can expose C++ `enum` (and `enum class`) to Java.
 
-To define a C++ enum that needs to be exported to Java:
+First, define a C++ `enum` that needs to be exported to Java:
 
 ```cpp
-enum class FooBar
+enum class MyEnum
 {
     Foo,
     Bar
 };
 
-DECLARE_ENUM_CLASS(o, "hu.info.hunyadi.test.FooBar");
+DECLARE_ENUM_CLASS(o, "hu.info.hunyadi.test.MyEnum");
 
 JAVA_EXTENSION_MODULE()
 {
     using namespace javabind;
     // ...
-    enum_class<FooBar>()
-        .value(FooBar::Foo, "Foo")
-        .value(FooBar::Bar, "Bar")
+    enum_class<MyEnum>()
+        .value(MyEnum::Foo, "Foo")
+        .value(MyEnum::Bar, "Bar")
         ;
 }
 ```
 
-The enum that needs to be defined in Java:
+Second, define a corresponding enumeration class in Java:
 
 ```java
 package hu.info.hunyadi.test;
 
-public enum FooBar {
+public enum MyEnum {
     Foo,
     Bar
 }
-
 ```
 
 ## Exceptions
