@@ -325,6 +325,12 @@ namespace javabind
             return StaticField(_env, _ref, name, signature);
         }
 
+        LocalObjectRef getStaticObjectField(const char* name, const std::string_view& signature)
+        {
+            StaticField fld = getStaticField(name, signature);
+            return LocalObjectRef(_env, _env->GetStaticObjectField(_ref, fld.ref()));
+        }
+
         LocalObjectRef getStaticObjectField(const std::string_view& name, const std::string_view& signature)
         {
             StaticField fld = getStaticField(name, signature);
