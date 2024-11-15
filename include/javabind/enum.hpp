@@ -16,41 +16,31 @@
 #include <algorithm>
 #include <optional>
 #include <type_traits>
+#include <unordered_map>
 
 namespace javabind
 {
     template <typename native_type>
     struct EnumValues
     {
-        inline static std::map<native_type, std::string_view> values_to_names;
-        inline static std::map<std::string_view, native_type> names_to_values;
+        inline static std::unordered_map<native_type, jobject> values_to_objects;
+        inline static std::unordered_map<jint, native_type> ordinals_to_values;
 
-        static native_type native_value(std::string_view java_name)
-        {
-            return names_to_values.at(java_name);
-        }
-
-        static std::string_view java_name(native_type native_value)
-        {
-            return values_to_names.at(native_value);
-        }
-
-        static bool contains(native_type native_value)
-        {
-            return values_to_names.find(native_value) != values_to_names.end();
-        }
-
-        static bool contains(std::string_view java_name)
-        {
-            return names_to_values.find(java_name) != names_to_values.end();
-        }
-
-        static void bind(native_type native_value, std::string_view java_name)
-        {
-            values_to_names[native_value] = java_name;
-            names_to_values[java_name] = native_value;
-        }
+        static void bind(native_type native_value, std::string_view java_name);
     };
+
+    static jint enum_value_ordinal(LocalClassRef& enum_class, JNIEnv* env, jobject object)
+    {
+        Method ordinal = enum_class.getMethod("ordinal", FunctionTraits<int()>::sig);
+        return env->CallIntMethod(object, ordinal.ref());
+    }
+
+    static std::string enum_value_name(LocalClassRef& enum_class, JNIEnv* env, jobject object)
+    {
+        Method nameFunc = enum_class.getMethod("name", FunctionTraits<std::string()>::sig);
+        jobject nameObject = env->CallObjectMethod(object, nameFunc.ref());
+        return arg_type_t<std::string>::native_value(env, static_cast<jstring>(nameObject));
+    }
 
     template <typename T>
     struct EnumClassJavaType : AssignableJavaType<T>
@@ -64,34 +54,35 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaEnumValue)
         {
-            LocalClassRef enumClass(env, javaEnumValue);
-            Method nameFunc = enumClass.getMethod("name", FunctionTraits<std::string()>::sig);
-            jobject nameObject = env->CallObjectMethod(javaEnumValue, nameFunc.ref());
-            std::string nameString = arg_type_t<std::string>::native_value(env, static_cast<jstring>(nameObject));
-            return native_value(env, nameString);
+            LocalClassRef enum_class(env, javaEnumValue);
+
+            try {
+                jint ordinal = enum_value_ordinal(enum_class, env, javaEnumValue);
+                return EnumValues<T>::ordinals_to_values.at(ordinal);
+            }
+            catch(const std::out_of_range& e) {
+                throw std::runtime_error(msg() << "Enum " << class_name << " has not bound java value " << enum_value_name(enum_class, env, javaEnumValue));
+            }
         }
 
-        static java_type java_value(JNIEnv* env, native_type nativeEnumValue)
+        static java_type java_value(JNIEnv*, native_type nativeEnumValue)
         {
-            LocalClassRef enumClass(env, class_path);
-            StaticField valueField = enumClass.getStaticField(java_value_name(env, nativeEnumValue), sig);
-            return env->GetStaticObjectField(enumClass.ref(), valueField.ref());
-        }
-
-        static native_type native_value(JNIEnv* env, std::string_view java_name)
-        {
-            if (!EnumValues<native_type>::contains(java_name))
-                javabind::throw_exception(env, msg() << "Enum " << class_name << " has not bound java value " << java_name);
-
-            return EnumValues<native_type>::native_value(java_name);
-        }
-
-        static std::string_view java_value_name(JNIEnv* env, native_type nativeEnumValue)
-        {
-            if (!EnumValues<native_type>::contains(nativeEnumValue))
-                javabind::throw_exception(env, msg() << "Enum " << class_name << " has not bound native value " << static_cast<std::underlying_type_t<native_type>>(nativeEnumValue));
-
-            return EnumValues<native_type>::java_name(nativeEnumValue);
+            try {
+                return EnumValues<T>::values_to_objects.at(nativeEnumValue);
+            }
+            catch(const std::out_of_range& e) {
+                throw std::runtime_error(msg() << "Enum " << class_name << " has not bound native value " << static_cast<std::underlying_type_t<native_type>>(nativeEnumValue));
+            }
         }
     };
+
+    template <typename T>
+    void EnumValues<T>::bind(T native_value, std::string_view java_name)
+    {
+        JNIEnv* env = this_thread.getEnv();
+        LocalClassRef enumClass(env, EnumClassJavaType<T>::class_path);
+        LocalObjectRef value = enumClass.getStaticObjectField(java_name, EnumClassJavaType<T>::sig);
+        values_to_objects.emplace(native_value, env->NewGlobalRef(value.ref()));
+        ordinals_to_values.emplace(enum_value_ordinal(enumClass, env, value.ref()), native_value);
+    }
 }
