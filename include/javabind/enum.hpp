@@ -79,7 +79,7 @@ namespace javabind
                 jint ordinal = enum_value_ordinal(enum_class, env, javaEnumValue);
                 return EnumValues<T>::ordinals_to_values.at(ordinal);
             }
-            catch(const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 throw std::runtime_error(msg() << "Enum " << class_name << " has not bound java value " << enum_value_name(enum_class, env, javaEnumValue));
             }
         }
@@ -89,7 +89,7 @@ namespace javabind
             try {
                 return EnumValues<T>::values_to_objects.at(nativeEnumValue);
             }
-            catch(const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 throw std::runtime_error(msg() << "Enum " << class_name << " has not bound native value " << static_cast<std::underlying_type_t<native_type>>(nativeEnumValue));
             }
         }

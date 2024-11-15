@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '8'
+          java-version: '17'
       - name: Set up build environment
         run: |
           cmake -E make_directory ${{github.workspace}}/build
@@ -28,6 +28,7 @@ jobs:
         run: |
           cmake .. && make
       - name: Compile and run Java sources
+        working-directory: ${{github.workspace}}
         run: |
           ./launch.sh
 
@@ -43,7 +44,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '8'
+          java-version: '17'
       - name: Set up build environment
         run: |
           cmake -E make_directory ${{github.workspace}}/build  
@@ -53,5 +54,7 @@ jobs:
         run: |
           cmake .. && msbuild javabind.sln
       - name: Compile and run Java sources
+        shell: cmd 
+        working-directory: ${{github.workspace}}
         run: |
           launch.bat
