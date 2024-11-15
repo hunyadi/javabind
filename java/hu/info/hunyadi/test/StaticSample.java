@@ -44,6 +44,8 @@ public class StaticSample {
 
     public static native double pass_double(double value);
 
+    public static native FooBar pass_foo_bar(FooBar value);
+
     public static native String pass_string(String value);
 
     public static native String pass_utf8_string(String value);

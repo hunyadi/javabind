@@ -25,23 +25,31 @@ namespace javabind
     /**
      * Prints all registered Java bindings.
      */
-    inline void print_registered_bindings() {
-        JavaOutput output(this_thread.getEnv());
-        std::ostream& os = output.stream();
-
+    inline void print_registered_bindings(std::ostream& os) {
         // imports
         os << "import hu.info.hunyadi.javabind.NativeObject;\n\n";
 
-        for (auto&& [class_name, bindings] : FunctionBindings::value) {
-            std::string simple_class_name;
-            std::size_t found = class_name.rfind('/');
+        for (auto&& [enum_name, bindings] : EnumBindings::value) {
+            std::string_view simple_enum_name = strip_until_last(enum_name, '/');
 
-            if (found != std::string::npos) {
-                simple_class_name = class_name.substr(found + 1);
+            // enum definition
+            os << "public enum " << simple_enum_name << " {\n";
+
+            // enum values
+            for (std::size_t i = 0; i < bindings.names.size(); i++) {
+                if (i != bindings.names.size() - 1) {
+                    os << "    " << bindings.names[i] << ",\n";
+                } else {
+                    os << "    " << bindings.names[i] << "\n";
+                }
             }
-            else {
-                simple_class_name = class_name;
-            }
+
+            // end of class definition
+            os << "}\n";
+        }
+
+        for (auto&& [class_name, bindings] : FunctionBindings::value) {
+            std::string_view simple_class_name = strip_until_last(class_name, '/');
 
             // class definition
             os << "public class " << simple_class_name << " extends NativeObject {\n";
@@ -63,6 +71,11 @@ namespace javabind
             // end of class definition
             os << "}\n";
         }
+    }
+
+    inline void print_registered_bindings() {
+        JavaOutput output(this_thread.getEnv());
+        print_registered_bindings(output.stream());
     }
 }
 
@@ -214,6 +227,17 @@ static void java_termination_impl(JavaVM* vm)
     }; \
     template <> struct javabind::ArgType<native_type> { \
         using type = ::javabind::NativeClassJavaType<native_type>; \
+    };
+
+//
+// Establishes a mapping between a native enum and a Java enum class.
+//
+#define DECLARE_ENUM_CLASS(native_type, java_class_qualifier) \
+    template <> struct javabind::ClassTraits<native_type> { \
+        constexpr static std::string_view class_name = java_class_qualifier; \
+    }; \
+    template <> struct javabind::ArgType<native_type> { \
+        using type = ::javabind::EnumClassJavaType<native_type>; \
     };
 
 //

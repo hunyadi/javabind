@@ -397,6 +397,22 @@ std::ostream& operator<<(std::ostream& os, const Person& person)
     return os << "{" << person.get_name() << "}";
 }
 
+enum class FooBar
+{
+    Foo,
+    Bar
+};
+
+std::ostream& operator<<(std::ostream& os, FooBar value)
+{
+    switch (value)
+    {
+        case FooBar::Foo: return os << "Foo";
+        case FooBar::Bar: return os << "Bar";
+        default: return os<< "Unknown";
+    }
+}
+
 DECLARE_NATIVE_CLASS(Sample, "hu.info.hunyadi.test.Sample");
 DECLARE_RECORD_CLASS(Rectangle, "hu.info.hunyadi.test.Rectangle");
 DECLARE_RECORD_CLASS(PrimitiveRecord, "hu.info.hunyadi.test.PrimitiveRecord");
@@ -404,6 +420,8 @@ DECLARE_STATIC_CLASS(StaticSample, "hu.info.hunyadi.test.StaticSample");
 
 DECLARE_NATIVE_CLASS(Person, "hu.info.hunyadi.test.Person");
 DECLARE_RECORD_CLASS(Residence, "hu.info.hunyadi.test.Residence");
+
+DECLARE_ENUM_CLASS(FooBar, "hu.info.hunyadi.test.FooBar");
 
 JAVA_EXTENSION_MODULE()
 {
@@ -449,6 +467,7 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_value<int64_t>>("pass_long")
         .function<StaticSample::pass_value<float>>("pass_float")
         .function<StaticSample::pass_value<double>>("pass_double")
+        .function<StaticSample::pass_value<FooBar>>("pass_foo_bar")
         .function<StaticSample::pass_string>("pass_string")
         .function<StaticSample::pass_utf8_string>("pass_utf8_string")
         .function<StaticSample::pass_utf16_string>("pass_utf16_string")
@@ -539,6 +558,11 @@ JAVA_EXTENSION_MODULE()
     record_class<Residence>()
         .field<&Residence::country>("country")
         .field<&Residence::city>("city")
+        ;
+
+    enum_class<FooBar>()
+        .value(FooBar::Foo, "Foo")
+        .value(FooBar::Bar, "Bar")
         ;
 
     print_registered_bindings();

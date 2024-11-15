@@ -34,6 +34,8 @@ public class TestJavaBind {
         assert StaticSample.pass_float(Float.MAX_VALUE) == Float.MAX_VALUE;
         assert StaticSample.pass_double(1.125) == 1.125;
         assert StaticSample.pass_double(Double.MAX_VALUE) == Double.MAX_VALUE;
+        assert StaticSample.pass_foo_bar(FooBar.Foo) == FooBar.Foo;
+        assert StaticSample.pass_foo_bar(FooBar.Bar) == FooBar.Bar;
         assert StaticSample.pass_string("ok").equals("ok");
         assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
