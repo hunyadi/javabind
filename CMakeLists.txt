@@ -26,7 +26,7 @@ target_include_directories(javabind INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_
 if(MSVC)
     target_compile_definitions(javabind INTERFACE _CRT_SECURE_NO_WARNINGS)
     # set warning level 4 and treat all warnings as errors
-    target_compile_options(javabind INTERFACE ${SIMDPARSE_AVX2_COMPILE} /permissive- /W4 /WX /Zc:__cplusplus,enumTypes,lambda,referenceBinding,rvalueCast,strictStrings,ternary)
+    target_compile_options(javabind INTERFACE ${SIMDPARSE_AVX2_COMPILE} /permissive- /wd5272 /W4 /WX /Zc:__cplusplus,enumTypes,lambda,referenceBinding,rvalueCast,strictStrings,ternary)
 else()
     # enable lots of warnings and treat all warnings as errors
     target_compile_options(javabind INTERFACE ${SIMDPARSE_AVX2_COMPILE} -Wall -Wextra -pedantic -Werror -Wfatal-errors)

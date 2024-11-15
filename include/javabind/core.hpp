@@ -83,6 +83,7 @@ namespace javabind
     struct JavaBooleanType : PrimitiveJavaType<JavaBooleanType, bool, jboolean>
     {
         constexpr static std::string_view class_name = "java.lang.Boolean";
+        constexpr static std::string_view class_path = "java/lang/Boolean";
         constexpr static std::string_view java_name = "boolean";
         constexpr static std::string_view sig = "Z";
 
@@ -123,6 +124,7 @@ namespace javabind
     struct JavaByteType : PrimitiveJavaType<JavaByteType, int8_t, jbyte>
     {
         constexpr static std::string_view class_name = "java.lang.Byte";
+        constexpr static std::string_view class_path = "java/lang/Byte";
         constexpr static std::string_view java_name = "byte";
         constexpr static std::string_view sig = "B";
 
@@ -163,6 +165,7 @@ namespace javabind
     struct JavaCharacterType : PrimitiveJavaType<JavaCharacterType, char16_t, jchar>
     {
         constexpr static std::string_view class_name = "java.lang.Character";
+        constexpr static std::string_view class_path = "java/lang/Character";
         constexpr static std::string_view java_name = "char";
         constexpr static std::string_view sig = "C";
 
@@ -203,6 +206,7 @@ namespace javabind
     struct JavaShortType : PrimitiveJavaType<JavaShortType, int16_t, jshort>
     {
         constexpr static std::string_view class_name = "java.lang.Short";
+        constexpr static std::string_view class_path = "java/lang/Short";
         constexpr static std::string_view java_name = "short";
         constexpr static std::string_view sig = "S";
 
@@ -243,6 +247,7 @@ namespace javabind
     struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType, int32_t, jint>
     {
         constexpr static std::string_view class_name = "java.lang.Integer";
+        constexpr static std::string_view class_path = "java/lang/Integer";
         constexpr static std::string_view java_name = "int";
         constexpr static std::string_view sig = "I";
 
@@ -283,6 +288,7 @@ namespace javabind
     struct JavaLongType : PrimitiveJavaType<JavaLongType, int64_t, jlong>
     {
         constexpr static std::string_view class_name = "java.lang.Long";
+        constexpr static std::string_view class_path = "java/lang/Long";
         constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";
 
@@ -323,6 +329,7 @@ namespace javabind
     struct JavaFloatType : PrimitiveJavaType<JavaFloatType, float, jfloat>
     {
         constexpr static std::string_view class_name = "java.lang.Float";
+        constexpr static std::string_view class_path = "java/lang/Float";
         constexpr static std::string_view java_name = "float";
         constexpr static std::string_view sig = "F";
 
@@ -363,6 +370,7 @@ namespace javabind
     struct JavaDoubleType : PrimitiveJavaType<JavaDoubleType, double, jdouble>
     {
         constexpr static std::string_view class_name = "java.lang.Double";
+        constexpr static std::string_view class_path = "java/lang/Double";
         constexpr static std::string_view java_name = "double";
         constexpr static std::string_view sig = "D";
 
