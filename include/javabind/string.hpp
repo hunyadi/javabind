@@ -163,7 +163,11 @@ namespace javabind
     template <std::string_view const&... items>
     static constexpr auto join_sep_v = join_sep<items...>::value;
 
-    // Remove everything before and including the last colon
+    /**
+     * Remove everything before and including a last character.
+     * @param str The string to strip.
+     * @param ch The character to look for.
+     */
     static constexpr std::string_view strip_until_last(std::string_view str, char ch)
     {
         std::size_t pos = str.rfind(ch);
