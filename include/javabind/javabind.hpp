@@ -255,7 +255,7 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
 
             bindings.initialize(values);
         }
-    } catch (std::exception& e) {
+    } catch (std::exception&) {
         // ensure no native exception is propagated to Java
         return JNI_ERR;
     }
