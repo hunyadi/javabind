@@ -33,7 +33,14 @@ namespace javabind
     template <typename T>
     struct record_class
     {
-        record_class() = default;
+        record_class()
+        {
+            auto result = FieldBindings::value.emplace(arg_type_t<T>::sig, FieldBindings::value_type());
+            if (!result.second) {
+                throw std::runtime_error(msg() << "Record class '" << arg_type_t<T>::class_name << "' is defined more than once in C++ code");
+            }
+        }
+
         record_class(const record_class&) = delete;
         record_class(record_class&&) = delete;
 
@@ -42,7 +49,7 @@ namespace javabind
             static_assert(std::is_member_object_pointer_v<decltype(member)>, "The template argument is expected to be a member variable pointer type.");
             using member_type = typename FieldType<decltype(member)>::type;
 
-            auto&& bindings = FieldBindings::value[arg_type_t<T>::sig];
+            auto&& bindings = FieldBindings::value.at(arg_type_t<T>::sig);
             bindings.push_back({
                 name,
                 arg_type_t<member_type>::sig,
@@ -79,8 +86,7 @@ namespace javabind
                 if constexpr (!std::is_same_v<result_type, void>) {
                     auto&& result = func(arg_type_t<Args>::native_value(env, args)...);
                     return static_cast<java_t<result_type>>(arg_type_t<result_type>::java_value(env, std::move(result)));
-                }
-                else {
+                } else {
                     func(arg_type_t<Args>::native_value(env, args)...);
                 }
             } catch (JavaException& ex) {
@@ -126,8 +132,7 @@ namespace javabind
                 if constexpr (!std::is_same_v<result_type, void>) {
                     auto&& result = (ptr->*func)(arg_type_t<Args>::native_value(env, args)...);
                     return arg_type_t<result_type>::java_value(env, std::move(result));
-                }
-                else {
+                } else {
                     (ptr->*func)(arg_type_t<Args>::native_value(env, args)...);
                 }
 
@@ -248,13 +253,23 @@ namespace javabind
     };
 
     struct FunctionBindings {
-        inline static std::map< std::string_view, std::vector<FunctionBinding> > value;
+        using key_type = std::string_view;
+        using value_type = std::vector<FunctionBinding>;
+
+        inline static std::map<key_type, value_type> value;
     };
 
     template <typename T>
     struct static_class
     {
-        static_class() = default;
+        static_class()
+        {
+            auto result = FunctionBindings::value.emplace(ClassTraits<T>::class_name, FunctionBindings::value_type());
+            if (!result.second) {
+                throw std::runtime_error(msg() << "Static class '" << ClassTraits<T>::class_name << "' is defined more than once in C++ code");
+            }
+        }
+
         static_class(const static_class&) = delete;
         static_class(static_class&&) = delete;
 
@@ -266,7 +281,7 @@ namespace javabind
             // check if signature is R(*func)(Args...)
             static_assert(is_unbound_function_pointer<func_type>::value, "The template argument is expected to be an unbound function pointer type.");
 
-            auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
+            auto&& bindings = FunctionBindings::value.at(ClassTraits<T>::class_name);
             bindings.push_back(
                 {
                     name,
@@ -291,7 +306,12 @@ namespace javabind
     {
         native_class()
         {
-            auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
+            auto result = FunctionBindings::value.emplace(ClassTraits<T>::class_name, FunctionBindings::value_type());
+            if (!result.second) {
+                throw std::runtime_error(msg() << "Native class '" << ClassTraits<T>::class_name << "' is defined more than once in C++ code");
+            }
+
+            auto&& bindings = result.first->second;
             bindings.push_back(
                 {
                     "close",
@@ -324,7 +344,7 @@ namespace javabind
         {
             static_assert(std::is_function_v<F>, "Use a function signature such as Sample(int, std::string) to identify a constructor.");
 
-            auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
+            auto&& bindings = FunctionBindings::value.at(ClassTraits<T>::class_name);
             bindings.push_back(
                 {
                     name,
@@ -361,7 +381,7 @@ namespace javabind
 
             static_assert(is_unbound || is_member, "The non-type template argument is expected to be of a free function or a compatible member function pointer type.");
 
-            auto&& bindings = FunctionBindings::value[ClassTraits<T>::class_name];
+            auto&& bindings = FunctionBindings::value.at(ClassTraits<T>::class_name);
             bindings.push_back(
                 {
                     name,
@@ -376,31 +396,45 @@ namespace javabind
         }
     };
 
-    struct EnumBinding {
-        std::vector<std::function<void(const std::unordered_map<std::string, EnumValue>&)>> initializers;
-        std::vector<std::string_view> names;
+    struct EnumBinding
+    {
+        using value_map_type = std::unordered_map<std::string, JavaEnumValue>;
+        using initializer_function = std::function<void(const value_map_type&)>;
+
+        EnumBinding(initializer_function&& initializer)
+            : _initializer(std::move(initializer))
+        {
+        }
+
+        const std::vector<std::string_view>& names() const
+        {
+            return _names;
+        }
 
         void add(std::string_view name)
         {
             if (!contains(name)) {
-                names.push_back(name);
+                _names.push_back(name);
             }
         }
 
-        bool contains(std::string_view name) const
+        bool contains(const std::string_view& name) const
         {
-            return std::find(names.begin(), names.end(), name) != names.end();
+            return std::find(_names.begin(), _names.end(), name) != _names.end();
         }
 
-        void initialize(const std::unordered_map<std::string, EnumValue>& values)
+        void initialize(const value_map_type& values)
         {
-            for (const auto& initializer : initializers) {
-                initializer(values);
-            }
+            _initializer(values);
         }
+
+    private:
+        initializer_function _initializer;
+        std::vector<std::string_view> _names;
     };
 
-    struct EnumBindings {
+    struct EnumBindings
+    {
         inline static std::map< std::string_view, EnumBinding > value;
     };
 
@@ -412,11 +446,13 @@ namespace javabind
     {
         enum_class()
         {
-            auto& binding = EnumBindings::value[arg_type_t<T>::class_name];
-            binding.initializers.push_back(&EnumValues<T>::initialize);
+            auto result = EnumBindings::value.emplace(arg_type_t<T>::class_name, EnumBinding(&EnumValues<T>::initialize));
+            if (!result.second) {
+                throw std::runtime_error(msg() << "Enum class '" << arg_type_t<T>::class_name << "' is defined more than once in C++ code");
+            }
         }
 
-        enum_class<T>& value(T native_value, std::string_view java_name)
+        enum_class<T>& value(T native_value, const std::string_view& java_name)
         {
             EnumBindings::value.at(arg_type_t<T>::class_name).add(java_name);
             EnumValues<T>::bind(native_value, java_name);

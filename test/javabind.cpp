@@ -82,8 +82,7 @@ std::ostream& operator<<(std::ostream& os, const std::optional<T>& opt)
 {
     if (opt.has_value()) {
         return os << "{" << opt.value() << "}";
-    }
-    else {
+    } else {
         return os << "{nullopt}";
     }
 }
@@ -94,7 +93,8 @@ struct Rectangle
     Rectangle(double width, double height)
         : width(width)
         , height(height)
-    {}
+    {
+    }
 
     double width = 0.0;
     double height = 0.0;
@@ -407,9 +407,12 @@ std::ostream& operator<<(std::ostream& os, FooBar value)
 {
     switch (value)
     {
-        case FooBar::Foo: return os << "Foo";
-        case FooBar::Bar: return os << "Bar";
-        default: return os<< "Unknown";
+    case FooBar::Foo:
+        return os << "Foo";
+    case FooBar::Bar:
+        return os << "Bar";
+    default:
+        return os << "Unknown";
     }
 }
 

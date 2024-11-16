@@ -35,7 +35,10 @@ namespace javabind
      */
     struct FieldBindings
     {
-        inline static std::map< std::string_view, std::vector<FieldBinding> > value;
+        using key_type = std::string_view;
+        using value_type = std::vector<FieldBinding>;
+
+        inline static std::map<key_type, value_type> value;
     };
 
     /**

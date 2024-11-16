@@ -25,5 +25,6 @@
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "C_Cpp.default.cppStandard": "c++17",
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "C_Cpp.vcFormat.newLine.beforeElse": false
 }

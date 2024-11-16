@@ -20,15 +20,25 @@
 
 namespace javabind
 {
-    struct EnumValue
+    /**
+     * Captures properties of a Java enumeration value.
+     *
+     * The reference to the Java enumeration value object is allocated as a global reference.
+     */
+    struct JavaEnumValue
     {
         jobject object;
         jint ordinal;
     };
 
+    /**
+     * Maps a C++ enumeration type to a Java enumeration class.
+     */
     template <typename native_type>
     struct EnumValues
     {
+        static_assert(std::is_enum_v<native_type>, "The template argument is expected to be an enumeration type.");
+
         inline static std::unordered_map<native_type, std::string_view> bindings;
         inline static std::unordered_map<native_type, jobject> values_to_objects;
         inline static std::unordered_map<jint, native_type> ordinals_to_values;
@@ -38,9 +48,9 @@ namespace javabind
             bindings.emplace(native_value, java_name);
         }
 
-        static void initialize(const std::unordered_map<std::string, EnumValue>& values)
+        static void initialize(const std::unordered_map<std::string, JavaEnumValue>& values)
         {
-            for (const auto [native_value, java_name]: bindings) {
+            for (const auto [native_value, java_name] : bindings) {
                 const auto& value = values.at(std::string(java_name));
                 values_to_objects.emplace(native_value, value.object);
                 ordinals_to_values.emplace(value.ordinal, native_value);
@@ -78,8 +88,7 @@ namespace javabind
             try {
                 jint ordinal = enum_value_ordinal(enum_class, env, javaEnumValue);
                 return EnumValues<T>::ordinals_to_values.at(ordinal);
-            }
-            catch (const std::out_of_range&) {
+            } catch (const std::out_of_range&) {
                 throw std::runtime_error(msg() << "Enum " << class_name << " has not bound java value " << enum_value_name(enum_class, env, javaEnumValue));
             }
         }
@@ -88,8 +97,7 @@ namespace javabind
         {
             try {
                 return EnumValues<T>::values_to_objects.at(nativeEnumValue);
-            }
-            catch (const std::out_of_range&) {
+            } catch (const std::out_of_range&) {
                 throw std::runtime_error(msg() << "Enum " << class_name << " has not bound native value " << static_cast<std::underlying_type_t<native_type>>(nativeEnumValue));
             }
         }

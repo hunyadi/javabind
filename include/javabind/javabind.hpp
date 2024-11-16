@@ -37,11 +37,11 @@ namespace javabind
             os << "public enum " << simple_enum_name << " {\n";
 
             // enum values
-            for (std::size_t i = 0; i < bindings.names.size(); i++) {
-                if (i != bindings.names.size() - 1) {
-                    os << "    " << bindings.names[i] << ",\n";
+            for (std::size_t i = 0; i < bindings.names().size(); i++) {
+                if (i != bindings.names().size() - 1) {
+                    os << "    " << bindings.names()[i] << ",\n";
                 } else {
-                    os << "    " << bindings.names[i] << "\n";
+                    os << "    " << bindings.names()[i] << "\n";
                 }
             }
 
@@ -229,7 +229,7 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
                 return JNI_ERR;
             }
 
-            std::unordered_map<std::string, EnumValue> values;
+            std::unordered_map<std::string, JavaEnumValue> values;
 
             for (jsize i = 0; i < env->GetArrayLength(values_arr); ++i) {
                 jobject value = env->GetObjectArrayElement(static_cast<jobjectArray>(values_arr), i);
@@ -250,13 +250,14 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
                 }
 
                 jint ordinal = env->CallIntMethod(value, ordinal_ref);
-                values.emplace(name, EnumValue { env->NewGlobalRef(value), ordinal });
+                values.emplace(name, JavaEnumValue{ env->NewGlobalRef(value), ordinal });
             }
 
             bindings.initialize(values);
         }
-    } catch (std::exception&) {
+    } catch (const std::exception& ex) {
         // ensure no native exception is propagated to Java
+        javabind::throw_exception(env, ex.what());
         return JNI_ERR;
     }
 

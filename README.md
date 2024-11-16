@@ -216,7 +216,7 @@ enum class MyEnum
     Bar
 };
 
-DECLARE_ENUM_CLASS(o, "hu.info.hunyadi.test.MyEnum");
+DECLARE_ENUM_CLASS(MyEnum, "hu.info.hunyadi.test.MyEnum");
 
 JAVA_EXTENSION_MODULE()
 {
