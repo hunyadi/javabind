@@ -19,6 +19,7 @@
 #include "callback.hpp"
 #include "message.hpp"
 #include <algorithm>
+#include <iostream>
 
 namespace javabind
 {
@@ -180,6 +181,79 @@ static jint java_initialization_impl(JavaVM* vm, void (*initializer)())
                 );
                 return JNI_ERR;
             }
+        }
+
+        // initialize enum bindings
+        for (auto&& [class_name, bindings] : EnumBindings::value) {
+            // find the enum class; JNI_OnLoad is called from the correct class loader context for this to work
+            std::string cn(class_name.data(), class_name.size());
+            std::replace(cn.begin(), cn.end(), '.', '/');
+            LocalClassRef cls(env, cn, std::nothrow);
+            if (cls.ref() == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Cannot find Java class '" << class_name << "' registered as an enum class in C++ code"
+                );
+                return JNI_ERR;
+            }
+
+            std::string values_sig = std::string("()[L").append(cn).append(";");
+            jmethodID values_ref = env->GetStaticMethodID(cls.ref(), "values", values_sig.data());
+            if (values_ref == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Cannot find static method 'values' with signature '" << values_sig << "' in registered enum class '" << class_name
+                );
+                return JNI_ERR;
+            }
+
+            jmethodID ordinal_ref = env->GetMethodID(cls.ref(), "ordinal", "()I");
+            if (ordinal_ref == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Cannot find method 'ordinal' with signature '()I' in enum value of class '" << class_name << "'"
+                );
+                return JNI_ERR;
+            }
+
+            jmethodID name_ref = env->GetMethodID(cls.ref(), "name", "()Ljava/lang/String;");
+            if (name_ref == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Cannot find method 'name' with signature '()Ljava/lang/String;' in enum value of class '" << class_name << "'"
+                );
+                return JNI_ERR;
+            }
+
+            jarray values_arr = static_cast<jarray>(env->CallStaticObjectMethod(cls.ref(), values_ref));
+            if (values_arr == nullptr) {
+                javabind::throw_exception(env,
+                    msg() << "Static method 'values' with signature '" << values_sig << "' in registered enum class '" << class_name << "' returned null"
+                );
+                return JNI_ERR;
+            }
+
+            std::unordered_map<std::string, EnumValue> values;
+
+            for (jsize i = 0; i < env->GetArrayLength(values_arr); ++i) {
+                jobject value = env->GetObjectArrayElement(static_cast<jobjectArray>(values_arr), i);
+                if (value == nullptr) {
+                    javabind::throw_exception(env,
+                        msg() << "Element " << i << " of static method 'values' in enum class '" << class_name << "' returned null"
+                    );
+                    return JNI_ERR;
+                }
+
+                std::string name = arg_type_t<std::string>::native_value(env, static_cast<jstring>(env->CallObjectMethod(value, name_ref)));
+
+                if (!bindings.contains(name)) {
+                    javabind::throw_exception(env,
+                        msg() << "Enum value '" << name << "' in class '" << class_name << "' is not registered in C++ code"
+                    );
+                    return JNI_ERR;
+                }
+
+                jint ordinal = env->CallIntMethod(value, ordinal_ref);
+                values.emplace(name, EnumValue { env->NewGlobalRef(value), ordinal });
+            }
+
+            bindings.initialize(values);
         }
     } catch (std::exception&) {
         // ensure no native exception is propagated to Java

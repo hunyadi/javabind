@@ -377,6 +377,7 @@ namespace javabind
     };
 
     struct EnumBinding {
+        std::vector<std::function<void(const std::unordered_map<std::string, EnumValue>&)>> initializers;
         std::vector<std::string_view> names;
 
         void add(std::string_view name)
@@ -389,6 +390,13 @@ namespace javabind
         bool contains(std::string_view name) const
         {
             return std::find(names.begin(), names.end(), name) != names.end();
+        }
+
+        void initialize(const std::unordered_map<std::string, EnumValue>& values)
+        {
+            for (const auto& initializer : initializers) {
+                initializer(values);
+            }
         }
     };
 
@@ -404,7 +412,8 @@ namespace javabind
     {
         enum_class()
         {
-            EnumBindings::value.emplace(arg_type_t<T>::class_name, EnumBinding {});
+            auto& binding = EnumBindings::value[arg_type_t<T>::class_name];
+            binding.initializers.push_back(&EnumValues<T>::initialize);
         }
 
         enum_class<T>& value(T native_value, std::string_view java_name)

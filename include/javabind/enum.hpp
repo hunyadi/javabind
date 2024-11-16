@@ -20,13 +20,32 @@
 
 namespace javabind
 {
+    struct EnumValue
+    {
+        jobject object;
+        jint ordinal;
+    };
+
     template <typename native_type>
     struct EnumValues
     {
+        inline static std::unordered_map<native_type, std::string_view> bindings;
         inline static std::unordered_map<native_type, jobject> values_to_objects;
         inline static std::unordered_map<jint, native_type> ordinals_to_values;
 
-        static void bind(native_type native_value, std::string_view java_name);
+        static void bind(native_type native_value, std::string_view java_name)
+        {
+            bindings.emplace(native_value, java_name);
+        }
+
+        static void initialize(const std::unordered_map<std::string, EnumValue>& values)
+        {
+            for (const auto [native_value, java_name]: bindings) {
+                const auto& value = values.at(std::string(java_name));
+                values_to_objects.emplace(native_value, value.object);
+                ordinals_to_values.emplace(value.ordinal, native_value);
+            }
+        }
     };
 
     static jint enum_value_ordinal(LocalClassRef& enum_class, JNIEnv* env, jobject object)
@@ -75,14 +94,4 @@ namespace javabind
             }
         }
     };
-
-    template <typename T>
-    void EnumValues<T>::bind(T native_value, std::string_view java_name)
-    {
-        JNIEnv* env = this_thread.getEnv();
-        LocalClassRef enumClass(env, EnumClassJavaType<T>::class_path);
-        LocalObjectRef value = enumClass.getStaticObjectField(java_name, EnumClassJavaType<T>::sig);
-        values_to_objects.emplace(native_value, env->NewGlobalRef(value.ref()));
-        ordinals_to_values.emplace(enum_value_ordinal(enumClass, env, value.ref()), native_value);
-    }
 }
