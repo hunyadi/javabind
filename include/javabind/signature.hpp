@@ -45,7 +45,20 @@ namespace javabind
         /** Java signature string used internally for type lookup. */
         constexpr static std::string_view sig = callable_sig<param_sig, return_sig>::value;
 
-        constexpr static std::string_view param_display = join_sep_v<comma, arg_type_t<Args>::java_name...>;
+        template<typename A, std::size_t I>
+        struct single_param_display
+        {
+            static constexpr std::string_view space = " ";
+            static constexpr std::string_view arg_name = "arg";
+            static constexpr std::string_view value = join_v<arg_type_t<A>::java_name, space, arg_name, to_string<I>::value>;
+        };
+
+        template <std::size_t... Is>
+        static constexpr std::string_view make_param_display(std::index_sequence<Is...>) {
+            return join_sep_v<comma, single_param_display<Args, Is>::value...>;
+        }
+
+        constexpr static std::string_view param_display = make_param_display(std::index_sequence_for<Args...>{});
         constexpr static std::string_view return_display = arg_type_t<R>::java_name;
     };
 
@@ -53,33 +66,24 @@ namespace javabind
      * Extracts a Java signature from a native free (non-member) function.
      */
     template <typename R, typename... Args>
-    struct FunctionTraits<R(*)(Args...)>
+    struct FunctionTraits<R(*)(Args...)> : public FunctionTraits<R(Args...)>
     {
-        constexpr static std::string_view sig = FunctionTraits<R(std::decay_t<Args>...)>::sig;
-        constexpr static std::string_view param_display = FunctionTraits<R(std::decay_t<Args>...)>::param_display;
-        constexpr static std::string_view return_display = FunctionTraits<R(std::decay_t<Args>...)>::return_display;
     };
 
     /**
      * Extracts a Java signature from a native member function.
      */
     template <typename T, typename R, typename... Args>
-    struct FunctionTraits<R(T::*)(Args...)>
+    struct FunctionTraits<R(T::*)(Args...)> : public FunctionTraits<R(Args...)>
     {
-        constexpr static std::string_view sig = FunctionTraits<R(std::decay_t<Args>...)>::sig;
-        constexpr static std::string_view param_display = FunctionTraits<R(std::decay_t<Args>...)>::param_display;
-        constexpr static std::string_view return_display = FunctionTraits<R(std::decay_t<Args>...)>::return_display;
     };
 
     /**
      * Extracts a Java signature from a const-qualified native member function.
      */
     template <typename T, typename R, typename... Args>
-    struct FunctionTraits<R(T::*)(Args...) const>
+    struct FunctionTraits<R(T::*)(Args...) const> : public FunctionTraits<R(Args...)>
     {
-        constexpr static std::string_view sig = FunctionTraits<R(std::decay_t<Args>...)>::sig;
-        constexpr static std::string_view param_display = FunctionTraits<R(std::decay_t<Args>...)>::param_display;
-        constexpr static std::string_view return_display = FunctionTraits<R(std::decay_t<Args>...)>::return_display;
     };
 
     template <std::string_view const& Name, typename... Args>
