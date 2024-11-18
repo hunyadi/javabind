@@ -173,4 +173,50 @@ namespace javabind
         std::size_t pos = str.rfind(ch);
         return pos == std::string_view::npos ? str : str.substr(pos + 1);
     }
+
+    /**
+     * Convert a number to a string with base 10.
+     * @tparam N The number to convert.
+     */
+    template <std::intmax_t N>
+    class to_string
+    {
+        static constexpr std::size_t len()
+        {
+            auto non_zero_len = [](std::intmax_t n, auto& self) -> std::size_t {
+                return n == 0 ? 0 : 1 + self(n / 10, self);
+            };
+            return N == 0 ? 1 : non_zero_len(N, non_zero_len);
+        }
+
+        static constexpr auto impl() noexcept
+        {
+            std::array<char, len()> arr{};
+            std::intmax_t n = N;
+
+            for (auto it = arr.rbegin(); it != arr.rend(); ++it) {
+                *it = '0' + (n % 10);
+                n /= 10;
+            }
+            return arr;
+        }
+
+        // give the joined string static storage
+        static constexpr auto arr = impl();
+
+    public:
+        // convert to a string literal, then view as a std::string_view
+        static constexpr std::string_view value = std::string_view(
+            to_char_array< arr.size(), arr, std::make_index_sequence<arr.size()> >::value,
+            arr.size()
+        );
+    };
+
+    // helper to extract value
+    template <std::intmax_t N>
+    static constexpr auto to_string_v = to_string<N>::value;
+
+    static_assert(to_string_v<0> == "0");
+    static_assert(to_string_v<1> == "1");
+    static_assert(to_string_v<10> == "10");
 }
