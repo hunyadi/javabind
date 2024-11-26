@@ -7,6 +7,7 @@
  * This work is licensed under the terms of the MIT license.
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
+
 #pragma once
 #include "object.hpp"
 #include "signature.hpp"
@@ -75,7 +76,7 @@ namespace javabind
         {
             LocalClassRef durationClass(env, javaValue);
             auto toNative = durationClass.getMethod(JavaDurationTraits<native_type>::to_native_method, "()J");
-            return native_type { env->CallLongMethod(javaValue, toNative.ref()) / JavaDurationTraits<native_type>::factor };
+            return native_type{ env->CallLongMethod(javaValue, toNative.ref()) / JavaDurationTraits<native_type>::factor };
         }
 
         static java_type java_value(JNIEnv* env, const native_type& nativeValue)
@@ -99,7 +100,9 @@ namespace javabind
             auto getNano = instantClass.getMethod("getNano", "()I");
             auto seconds = env->CallLongMethod(javaValue, getEpochSecond.ref());
             auto nanoseconds = env->CallIntMethod(javaValue, getNano.ref());
-            return native_type { std::chrono::seconds { seconds } + std::chrono::nanoseconds { nanoseconds } };
+            auto instant = native_type(std::chrono::duration_cast<typename native_type::duration>(std::chrono::seconds{ seconds }));
+            instant += std::chrono::duration_cast<typename native_type::duration>(std::chrono::nanoseconds{ nanoseconds });
+            return instant;
         }
 
         static java_type java_value(JNIEnv* env, const native_type& nativeValue)
