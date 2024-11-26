@@ -60,9 +60,9 @@ namespace javabind
         using java_type = JavaType;
 
 #ifdef JAVABIND_INTEGER_WIDENING_CONVERSION
-        static_assert(sizeof(native_type) <= sizeof(java_type), "JNI type is expected to at least the size of the C++ type.");
+        static_assert(sizeof(native_type) <= sizeof(java_type), "JNI type is expected to be at least the size of the C++ type.");
 #else
-        static_assert(sizeof(native_type) == sizeof(java_type), "JNI type is expected to be the same size as the C++ type.");
+        static_assert(sizeof(native_type) == sizeof(java_type), "C++ and JNI types are expected to match in size.");
 #endif
 
         static native_type native_value(JNIEnv*, java_type value)
