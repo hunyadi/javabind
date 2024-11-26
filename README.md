@@ -175,6 +175,12 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::map<K,V>` | `java.util.Map<K,V>` | `java.util.TreeMap<K,V>` |
 | `std::unordered_map<K,V>` | `java.util.Map<K,V>` | `java.util.HashMap<K,V>` |
 | `std::optional<T>` | `T` | `T` |
+| `std::chrono::nanoseconds` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::milliseconds` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::seconds` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::minutes` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::hours` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::system_clock::time_point` | `java.time.Instant` | `java.time.Instant` |
 | `std::function<R(T)>` | `Function<T,R>` | `NativeFunction<T,R>` implements `Function<T,R>` |
 | `std::function<R(int32_t)>` | `IntFunction<R>` | `NativeIntFunction<R>` implements `IntFunction<R>` |
 | `std::function<R(int64_t)>` | `LongFunction<R>` | `NativeLongFunction<R>` implements `LongFunction<R>` |
