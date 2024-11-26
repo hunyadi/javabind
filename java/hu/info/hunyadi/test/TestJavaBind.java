@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
-import static java.util.Map.entry;
 
 public class TestJavaBind {
     public static String string_transform(String source) {
@@ -40,6 +39,14 @@ public class TestJavaBind {
         assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
         System.out.println("PASS: class functions with simple types");
+
+        short max_unsigned_byte = 255;
+        assert StaticSample.pass_unsigned_byte(max_unsigned_byte) == max_unsigned_byte;
+        int max_unsigned_short = 65535;
+        assert StaticSample.pass_unsigned_short(max_unsigned_short) == max_unsigned_short;
+        long max_unsigned_int = 4294967295l;
+        assert StaticSample.pass_unsigned_int(max_unsigned_int) == max_unsigned_int;
+        System.out.println("PASS: class functions with unsigned integer types");
 
         assert StaticSample.pass_boxed_boolean(Boolean.valueOf(true)).equals(Boolean.valueOf(true));
         assert StaticSample.pass_boxed_integer(Integer.valueOf(23)).equals(Integer.valueOf(23));
@@ -156,13 +163,15 @@ public class TestJavaBind {
         assert StaticSample.pass_ordered_set_with_int_key(Set.of(1, 2, 3)).equals(Set.of(1, 2, 3));
 
         Map<String, Rectangle> rectangles = Map.ofEntries(
-                entry("a", new Rectangle(1.0, 2.0)),
-                entry("b", new Rectangle(3.0, 4.0)),
-                entry("c", new Rectangle(5.0, 6.0)));
+                Map.entry("a", new Rectangle(1.0, 2.0)),
+                Map.entry("b", new Rectangle(3.0, 4.0)),
+                Map.entry("c", new Rectangle(5.0, 6.0)));
         assert StaticSample.pass_ordered_map(rectangles).equals(rectangles);
         assert StaticSample.pass_unordered_map(rectangles).equals(rectangles);
-        assert StaticSample.pass_ordered_map_with_int_key(Map.of(1, "one", 2, "two", 3, "three")).equals(Map.of(1, "one", 2, "two", 3, "three"));
-        assert StaticSample.pass_ordered_map_with_int_value(Map.of("one", 1, "two", 2, "three", 3)).equals(Map.of("one", 1, "two", 2, "three", 3));
+        assert StaticSample.pass_ordered_map_with_int_key(Map.of(1, "one", 2, "two", 3, "three"))
+                .equals(Map.of(1, "one", 2, "two", 3, "three"));
+        assert StaticSample.pass_ordered_map_with_int_value(Map.of("one", 1, "two", 2, "three", 3))
+                .equals(Map.of("one", 1, "two", 2, "three", 3));
         System.out.println("PASS: collections");
 
         assert StaticSample.pass_optional_rectangle(null) == null;

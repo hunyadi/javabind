@@ -83,7 +83,7 @@ std::ostream& operator<<(std::ostream& os, const std::optional<T>& opt)
     if (opt.has_value()) {
         return os << "{" << opt.value() << "}";
     } else {
-        return os << "{nullopt}";
+        return os << "nullopt";
     }
 }
 
@@ -102,7 +102,7 @@ struct Rectangle
 
 std::ostream& operator<<(std::ostream& os, const Rectangle& rect)
 {
-    return os << "{" << rect.width << ", " << rect.height << "}";
+    return os << "{width=" << rect.width << ", height=" << rect.height << "}";
 }
 
 struct PrimitiveRecord
@@ -180,6 +180,15 @@ struct StaticSample
         JAVA_OUTPUT << "pass_value(" << value << ")" << std::endl;
         return value;
     }
+
+#if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
+    template <typename T>
+    static T pass_unsigned(T value)
+    {
+        JAVA_OUTPUT << "pass_unsigned(" << value << ")" << std::endl;
+        return value;
+    }
+#endif
 
     static std::string pass_string(const std::string& value)
     {
@@ -474,6 +483,18 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_string>("pass_string")
         .function<StaticSample::pass_utf8_string>("pass_utf8_string")
         .function<StaticSample::pass_utf16_string>("pass_utf16_string")
+
+#if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
+        // widening conversion for unsigned integer types
+        .function<StaticSample::pass_unsigned<uint8_t>>("pass_unsigned_byte")
+        .function<StaticSample::pass_unsigned<uint16_t>>("pass_unsigned_short")
+        .function<StaticSample::pass_unsigned<uint32_t>>("pass_unsigned_int")
+#else
+        // keep signatures to support the same native interface in Java
+        .function<StaticSample::pass_value<int16_t>>("pass_unsigned_byte")
+        .function<StaticSample::pass_value<int32_t>>("pass_unsigned_short")
+        .function<StaticSample::pass_value<int64_t>>("pass_unsigned_int")
+#endif
 
         // boxing and unboxing
         .function<StaticSample::pass_boxed<bool>>("pass_boxed_boolean")

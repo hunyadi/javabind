@@ -40,6 +40,12 @@ public class StaticSample {
 
     public static native long pass_long(long value);
 
+    public static native short pass_unsigned_byte(short value);
+
+    public static native int pass_unsigned_short(int value);
+
+    public static native long pass_unsigned_int(long value);
+
     public static native float pass_float(float value);
 
     public static native double pass_double(double value);
@@ -162,9 +168,11 @@ public class StaticSample {
 
     public static native Set<Integer> pass_ordered_set_with_int_key(Set<Integer> set);
 
-    public static native java.util.Map<Integer, String> pass_ordered_map_with_int_key(java.util.Map<Integer, String> map);
+    public static native java.util.Map<Integer, String> pass_ordered_map_with_int_key(
+            java.util.Map<Integer, String> map);
 
-    public static native java.util.Map<String, Integer> pass_ordered_map_with_int_value(java.util.Map<String, Integer> map);
+    public static native java.util.Map<String, Integer> pass_ordered_map_with_int_value(
+            java.util.Map<String, Integer> map);
 
     public static native Rectangle pass_optional_rectangle(Rectangle rectangle);
 

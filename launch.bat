@@ -1,4 +1,10 @@
 @echo off
+rem Builds the C++ library
+cmake -B build -D JAVABIND_INTEGER_WIDENING_CONVERSION=ON
+if errorlevel 1 exit /b %ERRORLEVEL%
+cmake --build build
+if errorlevel 1 exit /b %ERRORLEVEL%
+
 rem Compiles and runs the Java test application
 rem rmdir /s /q jar
 dir /s /b *.java > build\sources.txt
