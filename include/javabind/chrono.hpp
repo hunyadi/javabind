@@ -95,17 +95,22 @@ namespace javabind
         static native_type native_value(JNIEnv* env, java_type javaValue)
         {
             LocalClassRef instantClass(env, javaValue);
-            auto toMillis = instantClass.getMethod("toEpochMilli", "()J");
-            auto millis = env->CallLongMethod(javaValue, toMillis.ref());
-            return native_type { std::chrono::milliseconds { millis } };
+            auto getEpochSecond = instantClass.getMethod("getEpochSecond", "()J");
+            auto getNano = instantClass.getMethod("getNano", "()I");
+            auto seconds = env->CallLongMethod(javaValue, getEpochSecond.ref());
+            auto nanoseconds = env->CallIntMethod(javaValue, getNano.ref());
+            return native_type { std::chrono::seconds { seconds } + std::chrono::nanoseconds { nanoseconds } };
         }
 
         static java_type java_value(JNIEnv* env, const native_type& nativeValue)
         {
             LocalClassRef instantClass(env, AssignableJavaType<T>::class_path);
-            auto ofMillis = instantClass.getStaticMethod("ofEpochMilli", "(J)Ljava/time/Instant;");
-            auto millis = std::chrono::time_point_cast<std::chrono::milliseconds>(nativeValue).time_since_epoch().count();
-            return env->CallStaticObjectMethod(instantClass.ref(), ofMillis.ref(), static_cast<jlong>(millis));
+            auto ofMillis = instantClass.getStaticMethod("ofEpochSecond", "(JJ)Ljava/time/Instant;");
+            auto nativeValueSeconds = std::chrono::time_point_cast<std::chrono::seconds>(nativeValue);
+            auto nativeValueNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(nativeValue - nativeValueSeconds);
+            auto seconds = nativeValueSeconds.time_since_epoch().count();
+            auto nanoseconds = nativeValueNanos.count();
+            return env->CallStaticObjectMethod(instantClass.ref(), ofMillis.ref(), static_cast<jlong>(seconds), static_cast<jlong>(nanoseconds));
         }
     };
 
