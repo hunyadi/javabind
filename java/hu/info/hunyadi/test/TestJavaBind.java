@@ -7,6 +7,9 @@ import java.util.Set;
 import java.util.Map;
 import static java.util.Map.entry;
 
+import java.time.Duration;
+import java.time.Instant;
+
 public class TestJavaBind {
     public static String string_transform(String source) {
         return source.replace(' ', '_');
@@ -36,6 +39,12 @@ public class TestJavaBind {
         assert StaticSample.pass_double(Double.MAX_VALUE) == Double.MAX_VALUE;
         assert StaticSample.pass_foo_bar(FooBar.Foo) == FooBar.Foo;
         assert StaticSample.pass_foo_bar(FooBar.Bar) == FooBar.Bar;
+        assert StaticSample.pass_nanoseconds(Duration.ofNanos(1000)).equals(Duration.ofNanos(1000));
+        assert StaticSample.pass_milliseconds(Duration.ofMillis(1000)).equals(Duration.ofMillis(1000));
+        assert StaticSample.pass_seconds(Duration.ofSeconds(1000)).equals(Duration.ofSeconds(1000));
+        assert StaticSample.pass_minutes(Duration.ofMinutes(1000)).equals(Duration.ofMinutes(1000));
+        assert StaticSample.pass_hours(Duration.ofHours(1000)).equals(Duration.ofHours(1000));
+        assert StaticSample.pass_time_point(Instant.ofEpochSecond(1000)).equals(Instant.ofEpochSecond(1000));
         assert StaticSample.pass_string("ok").equals("ok");
         assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
