@@ -40,6 +40,7 @@ public class TestJavaBind {
         assert StaticSample.pass_foo_bar(FooBar.Foo) == FooBar.Foo;
         assert StaticSample.pass_foo_bar(FooBar.Bar) == FooBar.Bar;
         assert StaticSample.pass_nanoseconds(Duration.ofNanos(1000)).equals(Duration.ofNanos(1000));
+        assert StaticSample.pass_microseconds(Duration.ofNanos(1000000)).equals(Duration.ofNanos(1000000));
         assert StaticSample.pass_milliseconds(Duration.ofMillis(1000)).equals(Duration.ofMillis(1000));
         assert StaticSample.pass_seconds(Duration.ofSeconds(1000)).equals(Duration.ofSeconds(1000));
         assert StaticSample.pass_minutes(Duration.ofMinutes(1000)).equals(Duration.ofMinutes(1000));

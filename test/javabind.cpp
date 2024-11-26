@@ -92,6 +92,11 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& ns)
     return os << ns.count() << "ns";
 }
 
+std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& us)
+{
+    return os << us.count() << "us";
+}
+
 std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& ms)
 {
     return os << ms.count() << "ms";
@@ -503,6 +508,7 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_value<double>>("pass_double")
         .function<StaticSample::pass_value<FooBar>>("pass_foo_bar")
         .function<StaticSample::pass_value<std::chrono::nanoseconds>>("pass_nanoseconds")
+        .function<StaticSample::pass_value<std::chrono::microseconds>>("pass_microseconds")
         .function<StaticSample::pass_value<std::chrono::milliseconds>>("pass_milliseconds")
         .function<StaticSample::pass_value<std::chrono::seconds>>("pass_seconds")
         .function<StaticSample::pass_value<std::chrono::minutes>>("pass_minutes")

@@ -22,6 +22,15 @@ namespace javabind
     {
         constexpr static std::string_view to_native_method = "toNanos";
         constexpr static std::string_view of_native_method = "ofNanos";
+        constexpr static jlong factor = 1;
+    };
+
+    template <>
+    struct JavaDurationTraits<std::chrono::microseconds>
+    {
+        constexpr static std::string_view to_native_method = "toNanos";
+        constexpr static std::string_view of_native_method = "ofNanos";
+        constexpr static jlong factor = 1000;
     };
 
     template <>
@@ -29,6 +38,7 @@ namespace javabind
     {
         constexpr static std::string_view to_native_method = "toMillis";
         constexpr static std::string_view of_native_method = "ofMillis";
+        constexpr static jlong factor = 1;
     };
 
     template <>
@@ -36,6 +46,7 @@ namespace javabind
     {
         constexpr static std::string_view to_native_method = "getSeconds";
         constexpr static std::string_view of_native_method = "ofSeconds";
+        constexpr static jlong factor = 1;
     };
 
     template <>
@@ -43,6 +54,7 @@ namespace javabind
     {
         constexpr static std::string_view to_native_method = "toMinutes";
         constexpr static std::string_view of_native_method = "ofMinutes";
+        constexpr static jlong factor = 1;
     };
 
     template <>
@@ -50,6 +62,7 @@ namespace javabind
     {
         constexpr static std::string_view to_native_method = "toHours";
         constexpr static std::string_view of_native_method = "ofHours";
+        constexpr static jlong factor = 1;
     };
 
     template <typename T>
@@ -62,14 +75,14 @@ namespace javabind
         {
             LocalClassRef durationClass(env, javaValue);
             auto toNative = durationClass.getMethod(JavaDurationTraits<native_type>::to_native_method, "()J");
-            return native_type { env->CallLongMethod(javaValue, toNative.ref()) };
+            return native_type { env->CallLongMethod(javaValue, toNative.ref()) / JavaDurationTraits<native_type>::factor };
         }
 
         static java_type java_value(JNIEnv* env, const native_type& nativeValue)
         {
             LocalClassRef durationClass(env, AssignableJavaType<T>::class_path);
             auto ofNative = durationClass.getStaticMethod(JavaDurationTraits<native_type>::of_native_method, "(J)Ljava/time/Duration;");
-            return env->CallStaticObjectMethod(durationClass.ref(), ofNative.ref(), static_cast<jlong>(nativeValue.count()));
+            return env->CallStaticObjectMethod(durationClass.ref(), ofNative.ref(), static_cast<jlong>(nativeValue.count()) * JavaDurationTraits<native_type>::factor);
         }
     };
 
@@ -102,12 +115,14 @@ namespace javabind
     };
 
     template <> struct ClassTraits<std::chrono::nanoseconds> : public DurationClassTraits {};
+    template <> struct ClassTraits<std::chrono::microseconds> : public DurationClassTraits {};
     template <> struct ClassTraits<std::chrono::milliseconds> : public DurationClassTraits {};
     template <> struct ClassTraits<std::chrono::seconds> : public DurationClassTraits {};
     template <> struct ClassTraits<std::chrono::minutes> : public DurationClassTraits {};
     template <> struct ClassTraits<std::chrono::hours> : public DurationClassTraits {};
 
     template <> struct ArgType<std::chrono::nanoseconds> { using type = JavaDurationType<std::chrono::nanoseconds>; };
+    template <> struct ArgType<std::chrono::microseconds> { using type = JavaDurationType<std::chrono::microseconds>; };
     template <> struct ArgType<std::chrono::milliseconds> { using type = JavaDurationType<std::chrono::milliseconds>; };
     template <> struct ArgType<std::chrono::seconds> { using type = JavaDurationType<std::chrono::seconds>; };
     template <> struct ArgType<std::chrono::minutes> { using type = JavaDurationType<std::chrono::minutes>; };

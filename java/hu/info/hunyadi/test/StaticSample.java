@@ -48,6 +48,8 @@ public class StaticSample {
 
     public static native java.time.Duration pass_nanoseconds(java.time.Duration value);
 
+    public static native java.time.Duration pass_microseconds(java.time.Duration value);
+
     public static native java.time.Duration pass_milliseconds(java.time.Duration value);
 
     public static native java.time.Duration pass_seconds(java.time.Duration value);
