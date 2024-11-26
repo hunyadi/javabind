@@ -154,6 +154,9 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `int16_t` | `short` | `short` |
 | `int32_t` | `int` | `int` |
 | `int64_t` | `long` | `long` |
+| `uint8_t` | `short` | `short` |
+| `uint16_t` | `int` | `int` |
+| `uint32_t` | `long` | `long` |
 | `float` | `float` | `float` |
 | `double` | `double` | `double` |
 | `std::string` (UTF-8) | `String` | `String` |
