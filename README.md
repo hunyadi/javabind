@@ -176,6 +176,7 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `std::unordered_map<K,V>` | `java.util.Map<K,V>` | `java.util.HashMap<K,V>` |
 | `std::optional<T>` | `T` | `T` |
 | `std::chrono::nanoseconds` | `java.time.Duration` | `java.time.Duration` |
+| `std::chrono::microseconds` | `java.time.Duration` | `java.time.Duration` |
 | `std::chrono::milliseconds` | `java.time.Duration` | `java.time.Duration` |
 | `std::chrono::seconds` | `java.time.Duration` | `java.time.Duration` |
 | `std::chrono::minutes` | `java.time.Duration` | `java.time.Duration` |
