@@ -59,7 +59,7 @@ namespace javabind
         using native_type = NativeType;
         using java_type = JavaType;
 
-        static_assert(sizeof(native_type) == sizeof(java_type), "C++ and JNI types are expected to match in size.");
+        static_assert(sizeof(native_type) <= sizeof(java_type), "JNI type is expected to at least the size of the C++ type.");
 
         static native_type native_value(JNIEnv*, java_type value)
         {
@@ -203,15 +203,18 @@ namespace javabind
         }
     };
 
-    struct JavaShortType : PrimitiveJavaType<JavaShortType, int16_t, jshort>
+    template<typename T>
+    struct JavaShortType : PrimitiveJavaType<JavaShortType<T>, T, jshort>
     {
         constexpr static std::string_view class_name = "java.lang.Short";
         constexpr static std::string_view class_path = "java/lang/Short";
         constexpr static std::string_view java_name = "short";
         constexpr static std::string_view sig = "S";
 
-        using native_type = int16_t;
+        using native_type = T;
         using java_type = jshort;
+
+        using PrimitiveJavaType<JavaShortType<T>, T, jshort>::java_value;
 
         static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
@@ -244,15 +247,18 @@ namespace javabind
         }
     };
 
-    struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType, int32_t, jint>
+    template<typename T>
+    struct JavaIntegerType : PrimitiveJavaType<JavaIntegerType<T>, T, jint>
     {
         constexpr static std::string_view class_name = "java.lang.Integer";
         constexpr static std::string_view class_path = "java/lang/Integer";
         constexpr static std::string_view java_name = "int";
         constexpr static std::string_view sig = "I";
 
-        using native_type = int32_t;
+        using native_type = T;
         using java_type = jint;
+
+        using PrimitiveJavaType<JavaIntegerType<T>, T, jint>::java_value;
 
         static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
@@ -285,15 +291,18 @@ namespace javabind
         }
     };
 
-    struct JavaLongType : PrimitiveJavaType<JavaLongType, int64_t, jlong>
+    template<typename T>
+    struct JavaLongType : PrimitiveJavaType<JavaLongType<T>, T, jlong>
     {
         constexpr static std::string_view class_name = "java.lang.Long";
         constexpr static std::string_view class_path = "java/lang/Long";
         constexpr static std::string_view java_name = "long";
         constexpr static std::string_view sig = "J";
 
-        using native_type = int64_t;
+        using native_type = T;
         using java_type = jlong;
+
+        using PrimitiveJavaType<JavaLongType<T>, T, jlong>::java_value;
 
         static java_type java_get_field_value(JNIEnv* env, jobject obj, Field& fld)
         {
@@ -721,12 +730,15 @@ namespace javabind
     template <> struct ArgType<bool> { using type = JavaBooleanType; };
     template <> struct ArgType<int8_t> { using type = JavaByteType; };
     template <> struct ArgType<char16_t> { using type = JavaCharacterType; };
-    template <> struct ArgType<int16_t> { using type = JavaShortType; };
-    template <> struct ArgType<int32_t> { using type = JavaIntegerType; };
-    template <> struct ArgType<int64_t> { using type = JavaLongType; };
+    template <> struct ArgType<int16_t> { using type = JavaShortType<int16_t>; };
+    template <> struct ArgType<int32_t> { using type = JavaIntegerType<int32_t>; };
+    template <> struct ArgType<int64_t> { using type = JavaLongType<int64_t>; };
+    template <> struct ArgType<uint8_t> { using type = JavaShortType<uint8_t>; };
+    template <> struct ArgType<uint16_t> { using type = JavaIntegerType<uint16_t>; };
+    template <> struct ArgType<uint32_t> { using type = JavaLongType<uint32_t>; };
     template <> struct ArgType<float> { using type = JavaFloatType; };
     template <> struct ArgType<double> { using type = JavaDoubleType; };
-    template <> struct ArgType<std::size_t> { using type = JavaLongType; };
+    template <> struct ArgType<std::size_t> { using type = JavaLongType<std::size_t>; };
     template <> struct ArgType<std::string> { using type = JavaStringType; };
     template <> struct ArgType<std::string_view> { using type = JavaUTF8StringViewType; };
     template <> struct ArgType<std::u16string_view> { using type = JavaUTF16StringViewType; };
