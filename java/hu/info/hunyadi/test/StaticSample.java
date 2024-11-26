@@ -52,6 +52,20 @@ public class StaticSample {
 
     public static native FooBar pass_foo_bar(FooBar value);
 
+    public static native java.time.Duration pass_nanoseconds(java.time.Duration value);
+
+    public static native java.time.Duration pass_microseconds(java.time.Duration value);
+
+    public static native java.time.Duration pass_milliseconds(java.time.Duration value);
+
+    public static native java.time.Duration pass_seconds(java.time.Duration value);
+
+    public static native java.time.Duration pass_minutes(java.time.Duration value);
+
+    public static native java.time.Duration pass_hours(java.time.Duration value);
+
+    public static native java.time.Instant pass_time_point(java.time.Instant value);
+
     public static native String pass_string(String value);
 
     public static native String pass_utf8_string(String value);

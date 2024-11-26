@@ -87,6 +87,42 @@ std::ostream& operator<<(std::ostream& os, const std::optional<T>& opt)
     }
 }
 
+std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& ns)
+{
+    return os << ns.count() << "ns";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& us)
+{
+    return os << us.count() << "us";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& ms)
+{
+    return os << ms.count() << "ms";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& s)
+{
+    return os << s.count() << "s";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::minutes& m)
+{
+    return os << m.count() << "m";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::hours& h)
+{
+    return os << h.count() << "h";
+}
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::system_clock::time_point& tp)
+{
+    return os << tp.time_since_epoch();
+}
+
+
 struct Rectangle
 {
     Rectangle() = default;
@@ -480,6 +516,13 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_value<float>>("pass_float")
         .function<StaticSample::pass_value<double>>("pass_double")
         .function<StaticSample::pass_value<FooBar>>("pass_foo_bar")
+        .function<StaticSample::pass_value<std::chrono::nanoseconds>>("pass_nanoseconds")
+        .function<StaticSample::pass_value<std::chrono::microseconds>>("pass_microseconds")
+        .function<StaticSample::pass_value<std::chrono::milliseconds>>("pass_milliseconds")
+        .function<StaticSample::pass_value<std::chrono::seconds>>("pass_seconds")
+        .function<StaticSample::pass_value<std::chrono::minutes>>("pass_minutes")
+        .function<StaticSample::pass_value<std::chrono::hours>>("pass_hours")
+        .function<StaticSample::pass_value<std::chrono::system_clock::time_point>>("pass_time_point")
         .function<StaticSample::pass_string>("pass_string")
         .function<StaticSample::pass_utf8_string>("pass_utf8_string")
         .function<StaticSample::pass_utf16_string>("pass_utf16_string")

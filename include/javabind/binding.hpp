@@ -11,6 +11,7 @@
 #pragma once
 
 #include "core.hpp"
+#include "chrono.hpp"
 #include "class.hpp"
 #include "record.hpp"
 #include "function.hpp"
