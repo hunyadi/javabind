@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.24)
 
 project(javabind LANGUAGES CXX VERSION 0.1)
 
+option(JAVABIND_INTEGER_WIDENING_CONVERSION "Enable support for integer widening conversions (unsigned ints)" OFF)
+
 # Java integration
 find_package(JNI REQUIRED)
 
@@ -22,6 +24,10 @@ set(header_files ${JAVABIND_LIBRARY_HEADERS})
 add_library(javabind INTERFACE)
 target_sources(javabind INTERFACE "$<BUILD_INTERFACE:${header_files}>")
 target_include_directories(javabind INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
+
+if(JAVABIND_INTEGER_WIDENING_CONVERSION)
+    target_compile_definitions(javabind INTERFACE JAVABIND_INTEGER_WIDENING_CONVERSION)
+endif()
 
 if(MSVC)
     target_compile_definitions(javabind INTERFACE _CRT_SECURE_NO_WARNINGS)

@@ -203,6 +203,20 @@ C++ types `basic_string_view<T>` translate to JNI calls `GetPrimitiveArrayCritic
 
 The C++ type `u16string_view` translates to JNI calls `GetStringCritical` and `ReleaseStringCritical`, which entail similar restrictions as `GetPrimitiveArrayCritical` and `ReleasePrimitiveArrayCritical`.
 
+## C++ unsigned integer types
+
+Unsigned integers are not supported in Java. However, it is possible to marshal a C++ unsigned integer type to a wider Java signed integer type such that the target type can accommodate all values the source type can assume. Widening conversions are disabled by default. You can opt in to convert unsigned integers to a wider Java type by defining the preprocessor symbol `JAVABIND_INTEGER_WIDENING_CONVERSION` (or enabling the CMake option `JAVABIND_INTEGER_WIDENING_CONVERSION`).
+
+If enabled, the following integer type conversions take place:
+
+| C++ type | Java type |
+| -------- | --------- |
+| `uint8_t` | `short` |
+| `uint16_t` | `int` |
+| `uint32_t` | `long` |
+
+No run-time range checks are performed when passing a value from Java to C++. If the Java value is outside the range of the C++ type (e.g. negative value), the result is undefined.
+
 ## Enumeration types
 
 javabind can expose C++ `enum` (and `enum class`) to Java.
