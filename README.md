@@ -154,9 +154,6 @@ javabind recognizes several widely-used types and marshals them automatically be
 | `int16_t` | `short` | `short` |
 | `int32_t` | `int` | `int` |
 | `int64_t` | `long` | `long` |
-| `uint8_t` | `short` | `short` |
-| `uint16_t` | `int` | `int` |
-| `uint32_t` | `long` | `long` |
 | `float` | `float` | `float` |
 | `double` | `double` | `double` |
 | `std::string` (UTF-8) | `String` | `String` |
@@ -196,8 +193,6 @@ javabind recognizes several widely-used types and marshals them automatically be
 
 `boxed` is a lightweight C++ wrapper defined by the library to match Java boxed types such as `java.lang.Integer`. `boxed` has no C++ run-time overhead, it is only used for disambiguation.
 
-Unsigned integers have to be enabled with the CMake option JAVABIND_INTEGER_WIDENING_CONVERSION because they are converted to a wider integer type in Java.
-
 Collection types are copied between C++ and Java.
 
 Optionals are converted to a null-value in Java when they don't have a value in C++. Null-values are converted to an empty optional in C++.
@@ -207,6 +202,20 @@ C++ types `basic_string_view<T>` translate to JNI calls `GetPrimitiveArrayCritic
 > After calling `GetPrimitiveArrayCritical`, the native code should not run for an extended period of time before it calls `ReleasePrimitiveArrayCritical`. We must treat the code inside this pair of functions as running in a "critical region." Inside a critical region, native code must not call other JNI functions, or any system call that may cause the current thread to block and wait for another Java thread. (For example, the current thread must not call read on a stream being written by another Java thread.)
 
 The C++ type `u16string_view` translates to JNI calls `GetStringCritical` and `ReleaseStringCritical`, which entail similar restrictions as `GetPrimitiveArrayCritical` and `ReleasePrimitiveArrayCritical`.
+
+## C++ unsigned integer types
+
+Unsigned integers are not supported in Java. However, it is possible to marshal a C++ unsigned integer type to a wider Java signed integer type such that the target type can accommodate all values the source type can assume. Widening conversions are disabled by default. You can opt in to convert unsigned integers to a wider Java type by defining the preprocessor symbol `JAVABIND_INTEGER_WIDENING_CONVERSION` (or enabling the CMake option `JAVABIND_INTEGER_WIDENING_CONVERSION`).
+
+If enabled, the following integer type conversions take place:
+
+| C++ type | Java type |
+| -------- | --------- |
+| `uint8_t` | `short` |
+| `uint16_t` | `int` |
+| `uint32_t` | `long` |
+
+No run-time range checks are performed when passing a value from Java to C++. If the Java value is outside the range of the C++ type (e.g. negative value), the result is undefined.
 
 ## Enumeration types
 
