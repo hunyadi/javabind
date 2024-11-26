@@ -196,6 +196,8 @@ javabind recognizes several widely-used types and marshals them automatically be
 
 `boxed` is a lightweight C++ wrapper defined by the library to match Java boxed types such as `java.lang.Integer`. `boxed` has no C++ run-time overhead, it is only used for disambiguation.
 
+Unsigned integers have to be enabled with the CMake option JAVABIND_INTEGER_WIDENING_CONVERSION because they are converted to a wider integer type in Java.
+
 Collection types are copied between C++ and Java.
 
 Optionals are converted to a null-value in Java when they don't have a value in C++. Null-values are converted to an empty optional in C++.

@@ -30,9 +30,6 @@ public class TestJavaBind {
         assert StaticSample.pass_int(Integer.MAX_VALUE) == Integer.MAX_VALUE;
         assert StaticSample.pass_long(Long.MIN_VALUE) == Long.MIN_VALUE;
         assert StaticSample.pass_long(Long.MAX_VALUE) == Long.MAX_VALUE;
-        assert StaticSample.pass_unsigned_byte((short) (1 + Byte.MAX_VALUE + Byte.MAX_VALUE)) == (short) 1 + Byte.MAX_VALUE + Byte.MAX_VALUE;
-        assert StaticSample.pass_unsigned_short((int) (1 + Short.MAX_VALUE + Short.MAX_VALUE)) == (int) 1 + Short.MAX_VALUE + Short.MAX_VALUE;
-        assert StaticSample.pass_unsigned_int((long) (1 + Integer.MAX_VALUE + Integer.MAX_VALUE)) == (long) 1 + Integer.MAX_VALUE + Integer.MAX_VALUE;
         assert StaticSample.pass_float(2.5f) == 2.5f;
         assert StaticSample.pass_float(Float.MAX_VALUE) == Float.MAX_VALUE;
         assert StaticSample.pass_double(1.125) == 1.125;

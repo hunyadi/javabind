@@ -40,12 +40,6 @@ public class StaticSample {
 
     public static native long pass_long(long value);
 
-    public static native short pass_unsigned_byte(short value);
-
-    public static native int pass_unsigned_short(int value);
-
-    public static native long pass_unsigned_int(long value);
-
     public static native float pass_float(float value);
 
     public static native double pass_double(double value);
