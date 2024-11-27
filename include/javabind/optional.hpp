@@ -19,8 +19,6 @@ namespace javabind
     struct ClassTraits<std::optional<T>>
     {
         constexpr static std::string_view class_name = arg_type_t<T>::class_name;
-        constexpr static std::string_view class_path = arg_type_t<T>::class_path;
-        constexpr static std::string_view java_name = arg_type_t<T>::java_name;
     };
 
     /**
