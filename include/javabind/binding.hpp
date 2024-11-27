@@ -53,6 +53,7 @@ namespace javabind
             auto&& bindings = FieldBindings::value.at(arg_type_t<T>::sig);
             bindings.push_back({
                 name,
+                arg_type_t<member_type>::java_name,
                 arg_type_t<member_type>::sig,
                 [](JNIEnv* env, jobject obj, Field& fld, const void* native_object_ptr) {
                     const T* native_object = reinterpret_cast<const T*>(native_object_ptr);

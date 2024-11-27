@@ -31,7 +31,7 @@ namespace javabind
         os << "import hu.info.hunyadi.javabind.NativeObject;\n\n";
 
         for (auto&& [enum_name, bindings] : EnumBindings::value) {
-            std::string_view simple_enum_name = strip_until_last(enum_name, '/');
+            std::string_view simple_enum_name = strip_until_last(enum_name, '.');
 
             // enum definition
             os << "public enum " << simple_enum_name << " {\n";
@@ -49,8 +49,26 @@ namespace javabind
             os << "}\n";
         }
 
-        for (auto&& [class_name, bindings] : FunctionBindings::value) {
+        for (auto&& [class_name, bindings] : FieldBindings::value) {
             std::string_view simple_class_name = strip_until_last(class_name, '/');
+            simple_class_name = simple_class_name.substr(0, simple_class_name.size() - 1);
+
+            // class definition
+            os << "public record " << simple_class_name << "(";
+
+            for (std::size_t i = 0; i < bindings.size(); i++) {
+                if (i != bindings.size() - 1) {
+                    os << bindings[i].type << " " << bindings[i].name << ", ";
+                } else {
+                    os << bindings[i].type << " " << bindings[i].name;
+                }
+            }
+            os << ") {\n";
+            os << "}\n";
+        }
+
+        for (auto&& [class_name, bindings] : FunctionBindings::value) {
+            std::string_view simple_class_name = strip_until_last(class_name, '.');
 
             // class definition
             os << "public class " << simple_class_name << " extends NativeObject {\n";

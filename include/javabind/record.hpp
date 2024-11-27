@@ -22,6 +22,8 @@ namespace javabind
     {
         /** The field name as it appears in the class definition. */
         std::string_view name;
+        /** The Java type name associated with the field */
+        std::string_view type;
         /** The Java type signature associated with the field */
         std::string_view signature;
         /** A function that extracts a value from a Java object field. */
