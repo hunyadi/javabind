@@ -188,6 +188,8 @@ public class TestJavaBind {
         assert StaticSample.pass_optional_rectangle(new Rectangle(1.0, 2.0)).equals(new Rectangle(1.0, 2.0));
         assert StaticSample.pass_optional_int(null) == null;
         assert StaticSample.pass_optional_int(23).equals(23);
+        assert StaticSample.pass_optional_string(null) == null;
+        assert StaticSample.pass_optional_string("ok").equals("ok");
         System.out.println("PASS: optional");
 
     }

@@ -191,4 +191,6 @@ public class StaticSample {
     public static native Rectangle pass_optional_rectangle(Rectangle rectangle);
 
     public static native Integer pass_optional_int(Integer i);
+
+    public static native String pass_optional_string(String s);
 }

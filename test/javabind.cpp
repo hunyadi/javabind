@@ -609,6 +609,7 @@ JAVA_EXTENSION_MODULE()
         // optional
         .function<StaticSample::pass_optional<Rectangle>>("pass_optional_rectangle")
         .function<StaticSample::pass_optional<int>>("pass_optional_int")
+        .function<StaticSample::pass_optional<std::string>>("pass_optional_string")
         ;
 
     native_class<Person>()
