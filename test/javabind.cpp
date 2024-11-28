@@ -85,26 +85,26 @@ std::ostream& write_set(std::ostream& os, const S& set)
     return write_bracketed_list(os, set, '{', '}');
 }
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::set<T>& set)
+template <typename T, typename... Args>
+std::ostream& operator<<(std::ostream& os, const std::set<T, Args...>& set)
 {
     return write_set(os, set);
 }
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::unordered_set<T>& set)
+template <typename T, typename... Args>
+std::ostream& operator<<(std::ostream& os, const std::unordered_set<T, Args...>& set)
 {
     return write_set(os, set);
 }
 
-template <typename K, typename V>
-std::ostream& operator<<(std::ostream& os, const std::map<K, V>& set)
+template <typename K, typename V, typename... Args>
+std::ostream& operator<<(std::ostream& os, const std::map<K, V, Args...>& set)
 {
     return write_set(os, set);
 }
 
-template <typename K, typename V>
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V>& set)
+template <typename K, typename V, typename... Args>
+std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V, Args...>& set)
 {
     return write_set(os, set);
 }
@@ -493,6 +493,14 @@ std::ostream& operator<<(std::ostream& os, FooBar value)
     }
 }
 
+struct StringHash
+{
+    std::size_t operator()(const std::string& str) const
+    {
+        return str.empty() ? 0 : str.at(0);
+    }
+};
+
 DECLARE_NATIVE_CLASS(Sample, "hu.info.hunyadi.test.Sample");
 DECLARE_RECORD_CLASS(Rectangle, "hu.info.hunyadi.test.Rectangle");
 DECLARE_RECORD_CLASS(PrimitiveRecord, "hu.info.hunyadi.test.PrimitiveRecord");
@@ -637,6 +645,10 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::set<int>>>("pass_ordered_set_with_int_key")
         .function<StaticSample::pass_collection<std::map<int, std::string>>>("pass_ordered_map_with_int_key")
         .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
+        .function<StaticSample::pass_collection<std::set<std::string, std::greater<void>>>>("pass_ordered_set_descending")
+        .function<StaticSample::pass_collection<std::unordered_set<std::string, StringHash>>>("pass_unordered_set_with_hash")
+        .function<StaticSample::pass_collection<std::map<std::string, int, std::greater<void>>> >("pass_ordered_map_descending")
+        .function<StaticSample::pass_collection<std::unordered_map<std::string, int, StringHash>>>("pass_unordered_map_with_hash")
 
         // optional
         .function<StaticSample::pass_optional<Rectangle>>("pass_optional_rectangle")
