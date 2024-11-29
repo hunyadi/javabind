@@ -202,8 +202,8 @@ namespace javabind
         jobject javaMap;
     };
 
-    template <typename T>
-    struct ClassTraits<std::vector<T>>
+    template <typename T, typename Allocator>
+    struct ClassTraits<std::vector<T, Allocator>>
     {
         constexpr static std::string_view class_name = "java.util.List";
         constexpr static std::string_view class_path = "java/util/List";
@@ -211,8 +211,8 @@ namespace javabind
         constexpr static std::string_view concrete_class_path = "java/util/ArrayList";
     };
 
-    template <typename T>
-    struct ClassTraits<std::set<T>>
+    template <typename T, typename Compare, typename Allocator>
+    struct ClassTraits<std::set<T, Compare, Allocator>>
     {
         constexpr static std::string_view class_name = "java.util.Set";
         constexpr static std::string_view class_path = "java/util/Set";
@@ -220,8 +220,8 @@ namespace javabind
         constexpr static std::string_view concrete_class_path = "java/util/TreeSet";
     };
 
-    template <typename T>
-    struct ClassTraits<std::unordered_set<T>>
+    template <typename T, typename Hash, typename KeyEqual, typename Allocator>
+    struct ClassTraits<std::unordered_set<T, Hash, KeyEqual, Allocator>>
     {
         constexpr static std::string_view class_name = "java.util.Set";
         constexpr static std::string_view class_path = "java/util/Set";
@@ -229,8 +229,8 @@ namespace javabind
         constexpr static std::string_view concrete_class_path = "java/util/HashSet";
     };
 
-    template <typename K, typename V>
-    struct ClassTraits<std::map<K, V>>
+    template <typename K, typename V, typename Compare, typename Allocator>
+    struct ClassTraits<std::map<K, V, Compare, Allocator>>
     {
         constexpr static std::string_view class_name = "java.util.Map";
         constexpr static std::string_view class_path = "java/util/Map";
@@ -238,8 +238,8 @@ namespace javabind
         constexpr static std::string_view concrete_class_path = "java/util/TreeMap";
     };
 
-    template <typename K, typename V>
-    struct ClassTraits<std::unordered_map<K, V>>
+    template <typename K, typename V, typename Hash, typename KeyEqual, typename Allocator>
+    struct ClassTraits<std::unordered_map<K, V, Hash, KeyEqual, Allocator>>
     {
         constexpr static std::string_view class_name = "java.util.Map";
         constexpr static std::string_view class_path = "java/util/Map";
@@ -251,18 +251,18 @@ namespace javabind
      * Converts a C++ collection with a forward iterator into a Java List.
      */
     template <typename T>
-    struct JavaListType : AssignableJavaType<std::vector<T>>
+    struct JavaListType : AssignableJavaType<T>
     {
-        constexpr static std::string_view class_name = ClassTraits<std::vector<T>>::class_name;
-        constexpr static std::string_view java_name = ClassTraits<std::vector<T>>::java_name;
-
-        using native_type = std::vector<T>;
+        using native_type = T;
+        using element_type = typename native_type::value_type;
         using java_type = jobject;
 
-    public:
+        constexpr static std::string_view class_name = ClassTraits<T>::class_name;
+        constexpr static std::string_view java_name = ClassTraits<T>::java_name;
+
         static native_type native_value(JNIEnv* env, java_type javaList)
         {
-            list_view<T> view(env, javaList);
+            list_view<element_type> view(env, javaList);
             native_type nativeList;
             std::size_t size = view.size();
             for (std::size_t i = 0; i < size; i++) {
@@ -279,7 +279,7 @@ namespace javabind
             Method addFunc = arrayListClass.getMethod("add", FunctionTraits<bool(object)>::sig);
 
             for (auto&& element : nativeList) {
-                LocalObjectRef arrayListElement(env, arg_type_t<T>::java_value(env, element));
+                LocalObjectRef arrayListElement(env, arg_type_t<element_type>::java_value(env, element));
                 env->CallBooleanMethod(arrayList, addFunc.ref(), arrayListElement.ref());
             }
             return arrayList;
@@ -289,11 +289,11 @@ namespace javabind
     /**
      * Converts a native set (e.g. a [set] or [unordered_set]) into a Java Set.
      */
-    template <template<typename...> typename S, typename T>
-    struct JavaSetType : AssignableJavaType<S<T>>
+    template <template<typename...> typename S, typename T, typename... Args>
+    struct JavaSetType : AssignableJavaType<S<T, Args...>>
     {
-        using native_type = S<T>;
-        using native_boxed_type = S<boxed_t<T>>;
+        using native_type = S<T, Args...>;
+        using native_boxed_type = S<boxed_t<T>, Args...>;
         using element_type = typename native_boxed_type::key_type;
         using java_type = jobject;
 
@@ -330,22 +330,14 @@ namespace javabind
         }
     };
 
-    template <typename T>
-    struct JavaOrderedSetType : JavaSetType<std::set, T>
-    {};
-
-    template <typename T>
-    struct JavaUnorderedSetType : JavaSetType<std::unordered_set, T>
-    {};
-
     /**
      * Converts a native dictionary (e.g. a [map] or [unordered_map]) into a Java Map.
      */
-    template <template<typename...> typename M, typename K, typename V>
-    struct JavaMapType : AssignableJavaType<M<K, V>>
+    template <template<typename...> typename M, typename K, typename V, typename... Args>
+    struct JavaMapType : AssignableJavaType<M<K, V, Args...>>
     {
-        using native_type = M<K, V>;
-        using native_boxed_type = M<boxed_t<K>, boxed_t<V>>;
+        using native_type = M<K, V, Args...>;
+        using native_boxed_type = M<boxed_t<K>, boxed_t<V>, Args...>;
         using key_type = typename native_boxed_type::key_type;
         using value_type = typename native_boxed_type::mapped_type;
         using java_type = jobject;
@@ -385,17 +377,14 @@ namespace javabind
         }
     };
 
-    template <typename K, typename V>
-    struct JavaOrderedMapType : JavaMapType<std::map, K, V>
-    {};
-
-    template <typename K, typename V>
-    struct JavaUnorderedMapType : JavaMapType<std::unordered_map, K, V>
-    {};
-
-    template <typename T> struct ArgType<std::vector<T>, std::enable_if_t<!std::is_arithmetic_v<T>>> { using type = JavaListType<T>; };
-    template <typename T> struct ArgType<std::set<T>> { using type = JavaOrderedSetType<T>; };
-    template <typename T> struct ArgType<std::unordered_set<T>> { using type = JavaUnorderedSetType<T>; };
-    template <typename K, typename V> struct ArgType<std::map<K, V>> { using type = JavaOrderedMapType<K, V>; };
-    template <typename K, typename V> struct ArgType<std::unordered_map<K, V>> { using type = JavaUnorderedMapType<K, V>; };
+    template <typename T, typename Allocator>
+    struct ArgType<std::vector<T, Allocator>, std::enable_if_t<!std::is_arithmetic_v<T>>> { using type = JavaListType<std::vector<T, Allocator>>; };
+    template <typename T, typename Compare, typename Allocator>
+    struct ArgType<std::set<T, Compare, Allocator>> { using type = JavaSetType<std::set, T, Compare, Allocator>; };
+    template <typename T, typename Hash, typename KeyEqual, typename Allocator>
+    struct ArgType<std::unordered_set<T, Hash, KeyEqual, Allocator>> { using type = JavaSetType<std::unordered_set, T, Hash, KeyEqual, Allocator>; };
+    template <typename K, typename V, typename Compare, typename Allocator>
+    struct ArgType<std::map<K, V, Compare, Allocator>> { using type = JavaMapType<std::map, K, V, Compare, Allocator>; };
+    template <typename K, typename V, typename Hash, typename KeyEqual, typename Allocator>
+    struct ArgType<std::unordered_map<K, V, Hash, KeyEqual, Allocator>> { using type = JavaMapType<std::unordered_map, K, V, Hash, KeyEqual, Allocator>; };
 }
