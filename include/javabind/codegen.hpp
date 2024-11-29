@@ -91,9 +91,19 @@ namespace javabind
 
     static void write_native_class(std::ostream& os, std::string_view class_name, const std::vector<javabind::FunctionBinding>& bindings)
     {
-        os << "import hu.info.hunyadi.javabind.NativeObject;\n";
-        os << "\n";
-        os << "public class " << class_name << " extends NativeObject {\n";
+        auto is_close_method = [](const auto& binding) { return binding.name == "close" && binding.signature == FunctionTraits<void()>::sig; };
+        auto extends_native_object = std::any_of(bindings.begin(), bindings.end(), is_close_method);
+
+        if (extends_native_object)
+        {
+            os << "import hu.info.hunyadi.javabind.NativeObject;\n";
+            os << "\n";
+            os << "public class " << class_name << " extends NativeObject {\n";
+        }
+        else
+        {
+            os << "public class " << class_name << " {\n";
+        }
 
         for (auto&& binding : bindings)
         {
