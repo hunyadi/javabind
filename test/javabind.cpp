@@ -8,6 +8,7 @@
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
 
+#include <javabind/codegen.hpp>
 #include <javabind/javabind.hpp>
 #include <charconv>
 #include <optional>
@@ -664,6 +665,10 @@ JAVA_EXTENSION_MODULE()
         .value(FooBar::Foo, "Foo")
         .value(FooBar::Bar, "Bar")
         ;
+}
 
-    print_registered_bindings();
+JNIEXPORT void codegen(const std::filesystem::path& output_path)
+{
+    java_bindings_initializer();
+    javabind::codegen(output_path);
 }
