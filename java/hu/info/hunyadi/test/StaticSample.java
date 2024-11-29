@@ -182,19 +182,27 @@ public class StaticSample {
 
     public static native Set<Integer> pass_ordered_set_with_int_key(Set<Integer> set);
 
+    public static native java.util.Set<String> pass_ordered_set_descending(java.util.Set<String> set);
+
     public static native java.util.Map<Integer, String> pass_ordered_map_with_int_key(
             java.util.Map<Integer, String> map);
 
     public static native java.util.Map<String, Integer> pass_ordered_map_with_int_value(
             java.util.Map<String, Integer> map);
 
-    public static native java.util.Set<String> pass_ordered_set_descending(java.util.Set<String> set);
+    public static native java.util.Map<String, java.lang.Integer> pass_ordered_map_descending(
+            java.util.Map<String, java.lang.Integer> map);
 
     public static native java.util.Set<String> pass_unordered_set_with_hash(java.util.Set<String> set);
 
-    public static native java.util.Map<String, java.lang.Integer> pass_ordered_map_descending(java.util.Map<String, java.lang.Integer> map);
+    public static native java.util.Set<java.lang.Integer> pass_unordered_set_with_boxed_value_and_hash(
+            java.util.Set<java.lang.Integer> set);
 
-    public static native java.util.Map<String, java.lang.Integer> pass_unordered_map_with_hash(java.util.Map<String, java.lang.Integer> map);
+    public static native java.util.Map<String, java.lang.Integer> pass_unordered_map_with_hash(
+            java.util.Map<String, java.lang.Integer> map);
+
+    public static native java.util.Map<java.lang.Integer, String> pass_unordered_map_with_boxed_key_and_hash(
+            java.util.Map<java.lang.Integer, String> map);
 
     public static native Rectangle pass_optional_rectangle(Rectangle rectangle);
 

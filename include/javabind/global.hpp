@@ -34,6 +34,11 @@ namespace javabind
             _vm = nullptr;
         }
 
+        bool hasEnv()
+        {
+            return _vm != nullptr;
+        }
+
         void setEnv(JNIEnv* env)
         {
             assert(_vm != nullptr);
@@ -54,8 +59,7 @@ namespace javabind
                     if (_vm->AttachCurrentThread(reinterpret_cast<void**>(&_env), nullptr) == JNI_OK) {
                         assert(_env != nullptr);
                         _attached = true;
-                    }
-                    else {
+                    } else {
                         // failed to attach thread
                         return nullptr;
                     }

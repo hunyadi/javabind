@@ -18,8 +18,8 @@
 #include "binding.hpp"
 #include "callback.hpp"
 #include "message.hpp"
+#include "export.hpp"
 #include <algorithm>
-#include <iostream>
 
 namespace javabind
 {
@@ -45,8 +45,10 @@ namespace javabind
     }
 
     inline void print_registered_bindings() {
-        JavaOutput output(this_thread.getEnv());
-        print_registered_bindings(output.stream());
+        if (this_thread.hasEnv()) {
+            JavaOutput output(this_thread.getEnv());
+            print_registered_bindings(output.stream());
+        }
     }
 }
 

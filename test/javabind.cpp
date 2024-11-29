@@ -8,11 +8,11 @@
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
 
-#include <javabind/codegen.hpp>
 #include <javabind/javabind.hpp>
 #include <charconv>
 #include <optional>
 #include <vector>
+#include <javabind/codegen.hpp>
 
 std::string to_string(const std::chrono::system_clock::time_point& instant)
 {
@@ -499,7 +499,7 @@ struct MyHash
 {
     std::size_t operator()(const T& value) const
     {
-        return ~ std::hash<T>{}(value);
+        return ~std::hash<T>{}(value);
     }
 };
 
@@ -644,13 +644,15 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::unordered_set<std::string>>>("pass_unordered_set")
         .function<StaticSample::pass_collection<std::map<std::string, Rectangle>>>("pass_ordered_map")
         .function<StaticSample::pass_collection<std::unordered_map<std::string, Rectangle>>>("pass_unordered_map")
+
+        // collection types with custom template arguments
         .function<StaticSample::pass_collection<std::set<int>>>("pass_ordered_set_with_int_key")
+        .function<StaticSample::pass_collection<std::set<std::string, std::greater<void>>>>("pass_ordered_set_descending")
         .function<StaticSample::pass_collection<std::map<int, std::string>>>("pass_ordered_map_with_int_key")
         .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
-        .function<StaticSample::pass_collection<std::set<std::string, std::greater<void>>>>("pass_ordered_set_descending")
+        .function<StaticSample::pass_collection<std::map<std::string, int, std::greater<void>>> >("pass_ordered_map_descending")
         .function<StaticSample::pass_collection<std::unordered_set<std::string, MyHash<std::string>>>>("pass_unordered_set_with_hash")
         .function<StaticSample::pass_collection<std::unordered_set<int, MyHash<int>>>>("pass_unordered_set_with_boxed_value_and_hash")
-        .function<StaticSample::pass_collection<std::map<std::string, int, std::greater<void>>> >("pass_ordered_map_descending")
         .function<StaticSample::pass_collection<std::unordered_map<std::string, int, MyHash<std::string>>>>("pass_unordered_map_with_hash")
         .function<StaticSample::pass_collection<std::unordered_map<int, std::string, MyHash<int>>>>("pass_unordered_map_with_boxed_key_and_hash")
 
@@ -680,10 +682,8 @@ JAVA_EXTENSION_MODULE()
         .value(FooBar::Foo, "Foo")
         .value(FooBar::Bar, "Bar")
         ;
+
+    print_registered_bindings();
 }
 
-JNIEXPORT void codegen(const std::filesystem::path& output_path)
-{
-    java_bindings_initializer();
-    javabind::codegen(output_path);
-}
+JAVA_EXTENSION_EXPORT();

@@ -99,7 +99,8 @@ namespace javabind
         set_view(JNIEnv* env, jobject javaSet)
             : env(env)
             , javaSet(javaSet)
-        {}
+        {
+        }
 
         set_view_iterator<T> iterator() const
         {
@@ -119,7 +120,8 @@ namespace javabind
         map_entry(K&& key, V&& value)
             : key(std::forward<K>(key))
             , value(std::forward<V>(value))
-        {}
+        {
+        }
 
         K key;
         V value;
@@ -181,7 +183,8 @@ namespace javabind
         map_view(JNIEnv* env, jobject javaMap)
             : env(env)
             , javaMap(javaMap)
-        {}
+        {
+        }
 
         map_view_iterator<K, V> iterator() const
         {
@@ -289,11 +292,12 @@ namespace javabind
     /**
      * Converts a native set (e.g. a [set] or [unordered_set]) into a Java Set.
      */
-    template <template<typename...> typename S, typename T, typename... Args>
-    struct JavaSetType : AssignableJavaType<S<T, Args...>>
+    template <template<typename...> typename S, typename T, typename Allocator, typename... Args>
+    struct JavaSetType : AssignableJavaType<S<T, Args..., Allocator>>
     {
         using native_type = S<T, Args...>;
-        using native_boxed_type = S<boxed_t<T>, Args...>;
+        using boxed_allocator = typename std::allocator_traits<Allocator>::template rebind_alloc<boxed_t<T>>;
+        using native_boxed_type = S<boxed_t<T>, Args..., boxed_allocator>;
         using element_type = typename native_boxed_type::key_type;
         using java_type = jobject;
 
@@ -333,11 +337,12 @@ namespace javabind
     /**
      * Converts a native dictionary (e.g. a [map] or [unordered_map]) into a Java Map.
      */
-    template <template<typename...> typename M, typename K, typename V, typename... Args>
-    struct JavaMapType : AssignableJavaType<M<K, V, Args...>>
+    template <template<typename...> typename M, typename K, typename V, typename Allocator, typename... Args>
+    struct JavaMapType : AssignableJavaType<M<K, V, Args..., Allocator>>
     {
         using native_type = M<K, V, Args...>;
-        using native_boxed_type = M<boxed_t<K>, boxed_t<V>, Args...>;
+        using boxed_allocator = typename std::allocator_traits<Allocator>::template rebind_alloc<std::pair<const boxed_t<K>, boxed_t<V>>>;
+        using native_boxed_type = M<boxed_t<K>, boxed_t<V>, Args..., boxed_allocator>;
         using key_type = typename native_boxed_type::key_type;
         using value_type = typename native_boxed_type::mapped_type;
         using java_type = jobject;
@@ -380,11 +385,11 @@ namespace javabind
     template <typename T, typename Allocator>
     struct ArgType<std::vector<T, Allocator>, std::enable_if_t<!std::is_arithmetic_v<T>>> { using type = JavaListType<std::vector<T, Allocator>>; };
     template <typename T, typename Compare, typename Allocator>
-    struct ArgType<std::set<T, Compare, Allocator>> { using type = JavaSetType<std::set, T, Compare, Allocator>; };
+    struct ArgType<std::set<T, Compare, Allocator>> { using type = JavaSetType<std::set, T, Allocator, Compare>; };
     template <typename T, typename Hash, typename KeyEqual, typename Allocator>
-    struct ArgType<std::unordered_set<T, Hash, KeyEqual, Allocator>> { using type = JavaSetType<std::unordered_set, T, Hash, KeyEqual, Allocator>; };
+    struct ArgType<std::unordered_set<T, Hash, KeyEqual, Allocator>> { using type = JavaSetType<std::unordered_set, T, Allocator, Hash, KeyEqual>; };
     template <typename K, typename V, typename Compare, typename Allocator>
-    struct ArgType<std::map<K, V, Compare, Allocator>> { using type = JavaMapType<std::map, K, V, Compare, Allocator>; };
+    struct ArgType<std::map<K, V, Compare, Allocator>> { using type = JavaMapType<std::map, K, V, Allocator, Compare>; };
     template <typename K, typename V, typename Hash, typename KeyEqual, typename Allocator>
-    struct ArgType<std::unordered_map<K, V, Hash, KeyEqual, Allocator>> { using type = JavaMapType<std::unordered_map, K, V, Hash, KeyEqual, Allocator>; };
+    struct ArgType<std::unordered_map<K, V, Hash, KeyEqual, Allocator>> { using type = JavaMapType<std::unordered_map, K, V, Allocator, Hash, KeyEqual>; };
 }

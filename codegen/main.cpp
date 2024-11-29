@@ -1,7 +1,6 @@
-#include "javabind/codegen.hpp"
-#include <iostream>
+#include <javabind/codegen.hpp>
 
-JNIEXPORT void codegen(const std::filesystem::path& output_path);
+JAVA_EXTENSION_IMPORT();
 
 int main(int argc, char** argv)
 {
@@ -10,6 +9,6 @@ int main(int argc, char** argv)
         std::cout << "Usage: " << argv[0] << " OUTPUT_DIRECTORY" << std::endl;
         return -1;
     }
-    codegen(argv[1]);
+    java_bindings_emit_signatures(argv[1]);
     return 0;
 }
