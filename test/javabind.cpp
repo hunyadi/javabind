@@ -493,11 +493,12 @@ std::ostream& operator<<(std::ostream& os, FooBar value)
     }
 }
 
-struct StringHash
+template<typename T>
+struct MyHash
 {
-    std::size_t operator()(const std::string& str) const
+    std::size_t operator()(const T& value) const
     {
-        return str.empty() ? 0 : str.at(0);
+        return ~ std::hash<T>{}(value);
     }
 };
 
@@ -646,9 +647,9 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::map<int, std::string>>>("pass_ordered_map_with_int_key")
         .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
         .function<StaticSample::pass_collection<std::set<std::string, std::greater<void>>>>("pass_ordered_set_descending")
-        .function<StaticSample::pass_collection<std::unordered_set<std::string, StringHash>>>("pass_unordered_set_with_hash")
+        .function<StaticSample::pass_collection<std::unordered_set<std::string, MyHash<std::string>>>>("pass_unordered_set_with_hash")
         .function<StaticSample::pass_collection<std::map<std::string, int, std::greater<void>>> >("pass_ordered_map_descending")
-        .function<StaticSample::pass_collection<std::unordered_map<std::string, int, StringHash>>>("pass_unordered_map_with_hash")
+        .function<StaticSample::pass_collection<std::unordered_map<std::string, int, MyHash<std::string>>>>("pass_unordered_map_with_hash")
 
         // optional
         .function<StaticSample::pass_optional<Rectangle>>("pass_optional_rectangle")
