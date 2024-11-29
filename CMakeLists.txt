@@ -24,6 +24,7 @@ set(header_files ${JAVABIND_LIBRARY_HEADERS})
 add_library(javabind INTERFACE)
 target_sources(javabind INTERFACE "$<BUILD_INTERFACE:${header_files}>")
 target_include_directories(javabind INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
+target_link_libraries(javabind INTERFACE JNI::JNI)
 
 if(JAVABIND_INTEGER_WIDENING_CONVERSION)
     target_compile_definitions(javabind INTERFACE JAVABIND_INTEGER_WIDENING_CONVERSION)
@@ -40,9 +41,11 @@ endif()
 
 # shared library for unit tests
 add_library(javabind_native SHARED test/javabind.cpp)
-add_dependencies(javabind_native javabind)
-target_include_directories(javabind_native PRIVATE ${JNI_INCLUDE_DIRS})
-target_link_libraries(javabind_native PRIVATE javabind ${JAVA_JVM_LIBRARY})
+target_link_libraries(javabind_native PRIVATE javabind)
+
+# code generator
+add_executable(javabind_codegen codegen/main.cpp)
+target_link_libraries(javabind_codegen PRIVATE javabind_native javabind)
 
 # installer
 install(DIRECTORY include/javabind DESTINATION include)

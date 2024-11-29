@@ -30,65 +30,17 @@ namespace javabind
         // imports
         os << "import hu.info.hunyadi.javabind.NativeObject;\n\n";
 
-        for (auto&& [enum_name, bindings] : EnumBindings::value) {
-            std::string_view simple_enum_name = strip_until_last(enum_name, '.');
-
-            // enum definition
-            os << "public enum " << simple_enum_name << " {\n";
-
-            // enum values
-            for (std::size_t i = 0; i < bindings.names().size(); i++) {
-                if (i != bindings.names().size() - 1) {
-                    os << "    " << bindings.names()[i] << ",\n";
-                } else {
-                    os << "    " << bindings.names()[i] << "\n";
-                }
-            }
-
-            // end of class definition
-            os << "}\n";
+        for (auto&& [enum_class_name, bindings] : EnumBindings::value) {
+            ClassDescription class_desc = ClassDescription::from_full_name(enum_class_name);
+            write_enum_class(os, class_desc.name, bindings);
         }
-
-        for (auto&& [class_name, bindings] : FieldBindings::value) {
-            std::string_view simple_class_name = strip_until_last(class_name, '/');
-            simple_class_name = simple_class_name.substr(0, simple_class_name.size() - 1);
-
-            // class definition
-            os << "public record " << simple_class_name << "(";
-
-            for (std::size_t i = 0; i < bindings.size(); i++) {
-                if (i != bindings.size() - 1) {
-                    os << bindings[i].type << " " << bindings[i].name << ", ";
-                } else {
-                    os << bindings[i].type << " " << bindings[i].name;
-                }
-            }
-            os << ") {\n";
-            os << "}\n";
+        for (const auto& [record_class_sig, bindings] : javabind::FieldBindings::value) {
+            ClassDescription class_desc = ClassDescription::from_signature(record_class_sig);
+            write_record_class(os, class_desc.name, bindings);
         }
-
-        for (auto&& [class_name, bindings] : FunctionBindings::value) {
-            std::string_view simple_class_name = strip_until_last(class_name, '.');
-
-            // class definition
-            os << "public class " << simple_class_name << " extends NativeObject {\n";
-
-            // static methods
-            for (auto&& binding : bindings) {
-                if (!binding.is_member) {
-                    os << "    public static native " << binding.return_display << " " << binding.name << "(" << binding.param_display << ");\n";
-                }
-            }
-
-            // instance methods
-            for (auto&& binding : bindings) {
-                if (binding.is_member) {
-                    os << "    public native " << binding.return_display << " " << binding.name << "(" << binding.param_display << ");\n";
-                }
-            }
-
-            // end of class definition
-            os << "}\n";
+        for (const auto& [native_class_name, bindings] : javabind::FunctionBindings::value) {
+            ClassDescription class_desc = ClassDescription::from_full_name(native_class_name);
+            write_native_class(os, class_desc.name, bindings);
         }
     }
 
