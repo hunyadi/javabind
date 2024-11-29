@@ -96,9 +96,7 @@ namespace javabind
 
         if (extends_native_object)
         {
-            os << "import hu.info.hunyadi.javabind.NativeObject;\n";
-            os << "\n";
-            os << "public class " << class_name << " extends NativeObject {\n";
+            os << "public class " << class_name << " extends hu.info.hunyadi.javabind.NativeObject {\n";
         }
         else
         {
