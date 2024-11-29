@@ -158,9 +158,9 @@ public class TestJavaBind {
             person.setName("Dalma");
             assert person.getName().equals("Dalma");
 
-            assert person.getResidence().getCity().equals("Budapest");
+            assert person.getResidence().city().equals("Budapest");
             person.setResidence(vienna);
-            assert person.getResidence().getCity().equals("Wien");
+            assert person.getResidence().city().equals("Wien");
 
             person.setChildren(List.of(Person.create("Bela"), Person.create("Cecil")));
             assert person.getChildren().size() == 2;
