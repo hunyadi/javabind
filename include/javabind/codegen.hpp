@@ -36,7 +36,9 @@ namespace javabind
 
     void codegen(const std::filesystem::path& output_dir)
     {
-        for (const auto& [enum_class_name, bindings] : javabind::EnumBindings::value) {
+        for (auto&& item : javabind::EnumBindings::value) {
+            auto&& enum_class_name = item.first;
+            auto&& bindings = item.second;
             write_class(
                 output_dir,
                 ClassDescription::from_full_name(enum_class_name),
@@ -45,7 +47,9 @@ namespace javabind
                 }
             );
         }
-        for (const auto& [record_class_sig, bindings] : javabind::FieldBindings::value) {
+        for (auto&& item : javabind::FieldBindings::value) {
+            auto&& record_class_sig = item.first;
+            auto&& bindings = item.second;
             write_class(
                 output_dir,
                 ClassDescription::from_signature(record_class_sig),
@@ -54,7 +58,9 @@ namespace javabind
                 }
             );
         }
-        for (const auto& [native_class_name, bindings] : javabind::FunctionBindings::value) {
+        for (auto&& item : javabind::FunctionBindings::value) {
+            auto&& native_class_name = item.first;
+            auto&& bindings = item.second;
             write_class(
                 output_dir,
                 ClassDescription::from_full_name(native_class_name),

@@ -58,13 +58,13 @@ namespace javabind
         }
     };
 
-    static jint enum_value_ordinal(LocalClassRef& enum_class, JNIEnv* env, jobject object)
+    inline jint enum_value_ordinal(LocalClassRef& enum_class, JNIEnv* env, jobject object)
     {
         Method ordinal = enum_class.getMethod("ordinal", FunctionTraits<int()>::sig);
         return env->CallIntMethod(object, ordinal.ref());
     }
 
-    static std::string enum_value_name(LocalClassRef& enum_class, JNIEnv* env, jobject object)
+    inline std::string enum_value_name(LocalClassRef& enum_class, JNIEnv* env, jobject object)
     {
         Method nameFunc = enum_class.getMethod("name", FunctionTraits<std::string()>::sig);
         jobject nameObject = env->CallObjectMethod(object, nameFunc.ref());
