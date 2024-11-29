@@ -648,8 +648,10 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_collection<std::map<std::string, int>>>("pass_ordered_map_with_int_value")
         .function<StaticSample::pass_collection<std::set<std::string, std::greater<void>>>>("pass_ordered_set_descending")
         .function<StaticSample::pass_collection<std::unordered_set<std::string, MyHash<std::string>>>>("pass_unordered_set_with_hash")
+        .function<StaticSample::pass_collection<std::unordered_set<int, MyHash<int>>>>("pass_unordered_set_with_boxed_value_and_hash")
         .function<StaticSample::pass_collection<std::map<std::string, int, std::greater<void>>> >("pass_ordered_map_descending")
         .function<StaticSample::pass_collection<std::unordered_map<std::string, int, MyHash<std::string>>>>("pass_unordered_map_with_hash")
+        .function<StaticSample::pass_collection<std::unordered_map<int, std::string, MyHash<int>>>>("pass_unordered_map_with_boxed_key_and_hash")
 
         // optional
         .function<StaticSample::pass_optional<Rectangle>>("pass_optional_rectangle")
