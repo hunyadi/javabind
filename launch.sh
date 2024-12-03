@@ -1,7 +1,7 @@
 set -e
 
 # Build the C++ library
-cmake -B build -D JAVABIND_INTEGER_WIDENING_CONVERSION=ON
+cmake -B build -D JAVABIND_INTEGER_SIGNED_CAST=ON -D JAVABIND_INTEGER_WIDENING_CONVERSION=OFF
 cmake --build build
 
 # Emit Java function signatures

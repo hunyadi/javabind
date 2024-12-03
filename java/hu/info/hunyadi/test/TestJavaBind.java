@@ -53,13 +53,19 @@ public class TestJavaBind {
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
         System.out.println("PASS: class functions with simple types");
 
+        assert StaticSample.pass_cast_byte(Byte.MIN_VALUE) == Byte.MIN_VALUE;
+        assert StaticSample.pass_cast_short(Short.MIN_VALUE) == Short.MIN_VALUE;
+        assert StaticSample.pass_cast_int(Integer.MIN_VALUE) == Integer.MIN_VALUE;
+        assert StaticSample.pass_cast_long(Long.MIN_VALUE) == Long.MIN_VALUE;
+        System.out.println("PASS: class functions with casting unsigned integer types");
+
         short max_unsigned_byte = 255;
-        assert StaticSample.pass_unsigned_byte(max_unsigned_byte) == max_unsigned_byte;
+        assert StaticSample.pass_widen_byte(max_unsigned_byte) == max_unsigned_byte;
         int max_unsigned_short = 65535;
-        assert StaticSample.pass_unsigned_short(max_unsigned_short) == max_unsigned_short;
+        assert StaticSample.pass_widen_short(max_unsigned_short) == max_unsigned_short;
         long max_unsigned_int = 4294967295l;
-        assert StaticSample.pass_unsigned_int(max_unsigned_int) == max_unsigned_int;
-        System.out.println("PASS: class functions with unsigned integer types");
+        assert StaticSample.pass_widen_int(max_unsigned_int) == max_unsigned_int;
+        System.out.println("PASS: class functions with widening unsigned integer types");
 
         assert StaticSample.pass_boxed_boolean(Boolean.valueOf(true)).equals(Boolean.valueOf(true));
         assert StaticSample.pass_boxed_integer(Integer.valueOf(23)).equals(Integer.valueOf(23));

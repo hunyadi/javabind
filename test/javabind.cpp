@@ -250,11 +250,20 @@ struct StaticSample
         return value;
     }
 
+#if defined(JAVABIND_INTEGER_SIGNED_CAST)
+    template <typename T>
+    static T pass_cast(T value)
+    {
+        JAVA_OUTPUT << "pass_cast(" << value << ")" << std::endl;
+        return value;
+    }
+#endif
+
 #if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
     template <typename T>
-    static T pass_unsigned(T value)
+    static T pass_widen(T value)
     {
-        JAVA_OUTPUT << "pass_unsigned(" << value << ")" << std::endl;
+        JAVA_OUTPUT << "pass_widen(" << value << ")" << std::endl;
         return value;
     }
 #endif
@@ -569,16 +578,30 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_utf8_string>("pass_utf8_string")
         .function<StaticSample::pass_utf16_string>("pass_utf16_string")
 
-#if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
-        // widening conversion for unsigned integer types
-        .function<StaticSample::pass_unsigned<uint8_t>>("pass_unsigned_byte")
-        .function<StaticSample::pass_unsigned<uint16_t>>("pass_unsigned_short")
-        .function<StaticSample::pass_unsigned<uint32_t>>("pass_unsigned_int")
+#if defined(JAVABIND_INTEGER_SIGNED_CAST)
+        // signed cast for unsigned integer types
+        .function<StaticSample::pass_cast<uint8_t>>("pass_cast_byte")
+        .function<StaticSample::pass_cast<uint16_t>>("pass_cast_short")
+        .function<StaticSample::pass_cast<uint32_t>>("pass_cast_int")
+        .function<StaticSample::pass_cast<uint64_t>>("pass_cast_long")
 #else
         // keep signatures to support the same native interface in Java
-        .function<StaticSample::pass_value<int16_t>>("pass_unsigned_byte")
-        .function<StaticSample::pass_value<int32_t>>("pass_unsigned_short")
-        .function<StaticSample::pass_value<int64_t>>("pass_unsigned_int")
+        .function<StaticSample::pass_value<int8_t>>("pass_cast_byte")
+        .function<StaticSample::pass_value<int16_t>>("pass_cast_short")
+        .function<StaticSample::pass_value<int32_t>>("pass_cast_int")
+        .function<StaticSample::pass_value<int64_t>>("pass_cast_long")
+#endif
+
+#if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
+        // widening conversion for unsigned integer types
+        .function<StaticSample::pass_widen<uint8_t>>("pass_widen_byte")
+        .function<StaticSample::pass_widen<uint16_t>>("pass_widen_short")
+        .function<StaticSample::pass_widen<uint32_t>>("pass_widen_int")
+#else
+        // keep signatures to support the same native interface in Java
+        .function<StaticSample::pass_value<int16_t>>("pass_widen_byte")
+        .function<StaticSample::pass_value<int32_t>>("pass_widen_short")
+        .function<StaticSample::pass_value<int64_t>>("pass_widen_int")
 #endif
 
         // boxing and unboxing

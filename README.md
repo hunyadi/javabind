@@ -212,7 +212,15 @@ The C++ type `u16string_view` translates to JNI calls `GetStringCritical` and `R
 
 ## C++ unsigned integer types
 
-Unsigned integers are not supported in Java. However, it is possible to marshal a C++ unsigned integer type to a wider Java signed integer type such that the target type can accommodate all values the source type can assume. Widening conversions are disabled by default. You can opt in to convert unsigned integers to a wider Java type by defining the preprocessor symbol `JAVABIND_INTEGER_WIDENING_CONVERSION` (or enabling the CMake option `JAVABIND_INTEGER_WIDENING_CONVERSION`).
+Unsigned integers are not supported in Java. However, it is possible to marshal a C++ unsigned integer type to a compatible Java signed integer type. Two modes are supported. Conversions for C++ unsigned types are disabled by default, and require explicit opt-in.
+
+### Signed cast
+
+Signed cast assigns the value of a C++ unsigned integer type to a Java signed integer type of the same width, copying all bits. You can opt in to signed cast by defining the preprocessor symbol `JAVABIND_INTEGER_SIGNED_CAST` (or enabling the CMake option `JAVABIND_INTEGER_SIGNED_CAST`).
+
+### Widening conversion
+
+Widening converts the value of a C++ unsigned integer type to a wider Java signed integer type such that the target type can accommodate all values the source type can assume. You can opt in to convert unsigned integers to a wider Java type by defining the preprocessor symbol `JAVABIND_INTEGER_WIDENING_CONVERSION` (or enabling the CMake option `JAVABIND_INTEGER_WIDENING_CONVERSION`).
 
 If enabled, the following integer type conversions take place:
 

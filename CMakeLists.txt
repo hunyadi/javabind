@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.24)
 
 project(javabind LANGUAGES CXX VERSION 0.1)
 
-option(JAVABIND_INTEGER_WIDENING_CONVERSION "Enable support for integer widening conversions (unsigned ints)" OFF)
+option(JAVABIND_INTEGER_SIGNED_CAST "Enable support for integer signed/unsigned cast" OFF)
+option(JAVABIND_INTEGER_WIDENING_CONVERSION "Enable support for integer widening conversion" OFF)
 
 # Java integration
 find_package(JNI REQUIRED)
@@ -28,6 +29,9 @@ set_target_properties(javabind PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+if(JAVABIND_INTEGER_SIGNED_CAST)
+    target_compile_definitions(javabind INTERFACE JAVABIND_INTEGER_SIGNED_CAST)
+endif()
 if(JAVABIND_INTEGER_WIDENING_CONVERSION)
     target_compile_definitions(javabind INTERFACE JAVABIND_INTEGER_WIDENING_CONVERSION)
 endif()

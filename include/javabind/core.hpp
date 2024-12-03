@@ -16,13 +16,18 @@
 #include <cstdint>
 #include <vector>
 
+#if defined(JAVABIND_INTEGER_SIGNED_CAST) && defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
+#error Preprocessor symbols JAVABIND_INTEGER_SIGNED_CAST and JAVABIND_INTEGER_WIDENING_CONVERSION are mutually exclusive.
+#endif
+
 namespace javabind
 {
     /**
      * Represents a raw Java object.
      */
     struct object
-    {};
+    {
+    };
 
     template <typename T>
     struct boxed
@@ -59,7 +64,7 @@ namespace javabind
         using native_type = NativeType;
         using java_type = JavaType;
 
-#ifdef JAVABIND_INTEGER_WIDENING_CONVERSION
+#if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
         static_assert(sizeof(native_type) <= sizeof(java_type), "JNI type is expected to be at least the size of the C++ type.");
 #else
         static_assert(sizeof(native_type) == sizeof(java_type), "C++ and JNI types are expected to match in size.");
@@ -737,7 +742,11 @@ namespace javabind
     template <> struct ArgType<int16_t> { using type = JavaShortType<int16_t>; };
     template <> struct ArgType<int32_t> { using type = JavaIntegerType<int32_t>; };
     template <> struct ArgType<int64_t> { using type = JavaLongType<int64_t>; };
-#ifdef JAVABIND_INTEGER_WIDENING_CONVERSION
+#if defined(JAVABIND_INTEGER_SIGNED_CAST)
+    template <> struct ArgType<uint8_t> { using type = JavaByteType; };
+    template <> struct ArgType<uint16_t> { using type = JavaShortType<int16_t>; };
+    template <> struct ArgType<uint32_t> { using type = JavaIntegerType<int32_t>; };
+#elif defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
     template <> struct ArgType<uint8_t> { using type = JavaShortType<uint8_t>; };
     template <> struct ArgType<uint16_t> { using type = JavaIntegerType<uint16_t>; };
     template <> struct ArgType<uint32_t> { using type = JavaLongType<uint32_t>; };

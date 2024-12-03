@@ -2,7 +2,7 @@
 setlocal
 
 rem Build the C++ library
-cmake -B build -D JAVABIND_INTEGER_WIDENING_CONVERSION=ON
+cmake -B build -D JAVABIND_INTEGER_SIGNED_CAST=ON -D JAVABIND_INTEGER_WIDENING_CONVERSION=OFF
 if errorlevel 1 exit /b %ERRORLEVEL%
 cmake --build build
 if errorlevel 1 exit /b %ERRORLEVEL%
