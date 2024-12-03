@@ -7,12 +7,6 @@ option(JAVABIND_INTEGER_WIDENING_CONVERSION "Enable support for integer widening
 # Java integration
 find_package(JNI REQUIRED)
 
-# compiler configuration
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # sources
 file(GLOB JAVABIND_LIBRARY_HEADERS
     ${CMAKE_SOURCE_DIR}/include/javabind/*.hpp
@@ -25,6 +19,14 @@ add_library(javabind INTERFACE)
 target_sources(javabind INTERFACE "$<BUILD_INTERFACE:${header_files}>")
 target_include_directories(javabind INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
 target_link_libraries(javabind INTERFACE JNI::JNI)
+
+target_compile_features(javabind INTERFACE cxx_std_17)
+
+set_target_properties(javabind PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_VISIBILITY_PRESET hidden
+    POSITION_INDEPENDENT_CODE ON
+)
 
 if(JAVABIND_INTEGER_WIDENING_CONVERSION)
     target_compile_definitions(javabind INTERFACE JAVABIND_INTEGER_WIDENING_CONVERSION)
