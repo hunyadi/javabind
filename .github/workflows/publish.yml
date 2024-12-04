@@ -20,15 +20,10 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Set up build environment
-        run: |
-          cmake -E make_directory ${{github.workspace}}/build
       - name: Compile C++ sources
-        working-directory: ${{github.workspace}}/build
         run: |
-          cmake .. && make
+          cmake -B build && cmake --build build
       - name: Compile and run Java sources
-        working-directory: ${{github.workspace}}
         run: |
           ./launch.sh
 
@@ -49,13 +44,9 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Set up build environment
-        run: |
-          cmake -E make_directory ${{github.workspace}}/build  
       - name: Compile C++ sources
-        working-directory: ${{github.workspace}}/build
         run: |
-          cmake .. && msbuild javabind.sln
+          cmake -B build && cmake --build build
       - name: Compile and run Java sources
         working-directory: ${{github.workspace}}
         run: |
