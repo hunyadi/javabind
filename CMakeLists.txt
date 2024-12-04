@@ -46,7 +46,7 @@ else()
 endif()
 
 # shared library for unit tests
-add_library(javabind_native SHARED test/javabind.cpp)
+add_library(javabind_native SHARED test/javabind.cpp test/format.hpp)
 target_link_libraries(javabind_native PRIVATE javabind)
 
 # code generator

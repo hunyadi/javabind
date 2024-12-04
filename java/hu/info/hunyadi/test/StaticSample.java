@@ -40,13 +40,13 @@ public class StaticSample {
 
     public static native long pass_long(long value);
 
-    public static native byte pass_cast_byte(byte value);
+    public static native byte pass_cast_byte(byte value, String expected);
 
-    public static native short pass_cast_short(short value);
+    public static native short pass_cast_short(short value, String expected);
 
-    public static native int pass_cast_int(int value);
+    public static native int pass_cast_int(int value, String expected);
 
-    public static native long pass_cast_long(long value);
+    public static native long pass_cast_long(long value, String expected);
 
     public static native short pass_widen_byte(short value);
 

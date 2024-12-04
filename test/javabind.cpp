@@ -13,165 +13,7 @@
 #include <optional>
 #include <vector>
 #include <javabind/codegen.hpp>
-
-inline bool time_to_struct(const time_t* timer, struct tm* buf)
-{
-#if defined(_MSC_VER)
-	return gmtime_s(buf, timer) == 0;
-#else
-	return gmtime_r(timer, buf) != nullptr;
-#endif
-}
-
-std::string to_string(const std::chrono::system_clock::time_point& instant)
-{
-    auto duration_s = std::chrono::duration_cast<std::chrono::seconds>(instant.time_since_epoch());
-    auto duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>((instant - duration_s).time_since_epoch());
-
-    if (duration_ns.count() < 0) {
-        // ensure nanoseconds part is always non-negative
-        duration_s -= std::chrono::seconds(1);
-        duration_ns += std::chrono::nanoseconds(1'000'000'000);
-    }
-
-    // use 400-year periodicity of Gregorian calendar
-    unsigned int periods = 0;
-    while (duration_s.count() < 0) {
-        // ensure seconds part is always non-negative
-        duration_s += std::chrono::hours(24 * 146'097);
-        ++periods;
-    }
-
-    unsigned long long ns = duration_ns.count();
-    std::time_t tv = static_cast<std::time_t>(duration_s.count());
-    std::tm tp;
-    if (!time_to_struct(&tv, &tp)) {
-        return std::string("[ERROR]");
-    }
-
-    // 1984-01-01 01:02:03.123456789Z
-    char buf[64];
-    int n = std::snprintf(buf, sizeof(buf), "%.4d-%02u-%02u %02u:%02u:%02u.%09lluZ",
-        tp.tm_year + 1900 - 400 * periods,
-        tp.tm_mon + 1,
-        tp.tm_mday,
-        tp.tm_hour,
-        tp.tm_min,
-        tp.tm_sec,
-        ns
-    );
-    return std::string(buf, buf + n);
-}
-
-template <typename K, typename V>
-std::ostream& operator<<(std::ostream& os, const std::pair<K, V>& pair)
-{
-    return os << pair.first << ": " << pair.second;
-}
-
-template <typename L>
-std::ostream& write_bracketed_list(std::ostream& os, const L& list, char left, char right)
-{
-    os << left;
-    if (!list.empty()) {
-        auto&& it = list.begin();
-        os << *it;
-
-        for (++it; it != list.end(); ++it) {
-            os << ", " << *it;
-        }
-    }
-    os << right;
-    return os;
-}
-
-template <typename L>
-std::ostream& write_list(std::ostream& os, const L& vec)
-{
-    return write_bracketed_list(os, vec, '[', ']');
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& list)
-{
-    return write_list(os, list);
-}
-
-template <typename S>
-std::ostream& write_set(std::ostream& os, const S& set)
-{
-    return write_bracketed_list(os, set, '{', '}');
-}
-
-template <typename T, typename... Args>
-std::ostream& operator<<(std::ostream& os, const std::set<T, Args...>& set)
-{
-    return write_set(os, set);
-}
-
-template <typename T, typename... Args>
-std::ostream& operator<<(std::ostream& os, const std::unordered_set<T, Args...>& set)
-{
-    return write_set(os, set);
-}
-
-template <typename K, typename V, typename... Args>
-std::ostream& operator<<(std::ostream& os, const std::map<K, V, Args...>& set)
-{
-    return write_set(os, set);
-}
-
-template <typename K, typename V, typename... Args>
-std::ostream& operator<<(std::ostream& os, const std::unordered_map<K, V, Args...>& set)
-{
-    return write_set(os, set);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::optional<T>& opt)
-{
-    if (opt.has_value()) {
-        return os << "{" << opt.value() << "}";
-    } else {
-        return os << "nullopt";
-    }
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& ns)
-{
-    return os << ns.count() << "ns";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::microseconds& us)
-{
-    return os << us.count() << "us";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::milliseconds& ms)
-{
-    return os << ms.count() << "ms";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::seconds& s)
-{
-    return os << s.count() << "s";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::minutes& m)
-{
-    return os << m.count() << "m";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::hours& h)
-{
-    return os << h.count() << "h";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::chrono::system_clock::time_point& instant)
-{
-    return os << to_string(instant);
-}
-
+#include "format.hpp"
 
 struct Rectangle
 {
@@ -263,16 +105,45 @@ struct StaticSample
     template <typename T>
     static T pass_value(T value)
     {
-        JAVA_OUTPUT << "pass_value(" << value << ")" << std::endl;
+        std::ostringstream s;
+        if constexpr (std::is_same_v<T, bool>) {
+            s << (value ? "true" : "false");
+        } else if constexpr (std::is_same_v<T, int8_t>) {
+            s << int(value);
+        } else {
+            s << value;
+        }
+        JAVA_OUTPUT << "pass_value(" << s.str() << ")" << std::endl;
         return value;
     }
 
 #if defined(JAVABIND_INTEGER_SIGNED_CAST)
+    /** Checks signed/unsigned cast against an expected string of digits. */
     template <typename T>
-    static T pass_cast(T value)
+    static T pass_cast(T value, const std::string_view& expected)
     {
-        JAVA_OUTPUT << "pass_cast(" << value << ")" << std::endl;
+        static_assert(std::is_unsigned_v<T>, "Unsigned integer type expected.");
+
+        std::ostringstream s;
+        if constexpr (std::is_same_v<T, uint8_t>) {
+            s << unsigned(value);
+        } else {
+            s << value;
+        }
+        std::string actual = s.str();
+        JAVA_OUTPUT << "pass_cast(" << actual << ")" << std::endl;
+        if (actual != expected) {
+            throw std::runtime_error("expected value mismatch");
+        }
         return value;
+    }
+#else
+    /** Function to ignore expected string when signed/unsigned cast is disabled. */
+    template <typename T>
+    static T pass_ignore(T value, const std::string_view& /*expected*/)
+    {
+        static_assert(std::is_signed_v<T>, "Signed integer type expected.");
+        return pass_value(value);
     }
 #endif
 
@@ -603,10 +474,10 @@ JAVA_EXTENSION_MODULE()
         .function<StaticSample::pass_cast<uint64_t>>("pass_cast_long")
 #else
         // keep signatures to support the same native interface in Java
-        .function<StaticSample::pass_value<int8_t>>("pass_cast_byte")
-        .function<StaticSample::pass_value<int16_t>>("pass_cast_short")
-        .function<StaticSample::pass_value<int32_t>>("pass_cast_int")
-        .function<StaticSample::pass_value<int64_t>>("pass_cast_long")
+        .function<StaticSample::pass_ignore<int8_t>>("pass_cast_byte")
+        .function<StaticSample::pass_ignore<int16_t>>("pass_cast_short")
+        .function<StaticSample::pass_ignore<int32_t>>("pass_cast_int")
+        .function<StaticSample::pass_ignore<int64_t>>("pass_cast_long")
 #endif
 
 #if defined(JAVABIND_INTEGER_WIDENING_CONVERSION)

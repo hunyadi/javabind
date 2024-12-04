@@ -27,14 +27,16 @@ public class TestJavaBind {
         assert StaticSample.pass_bool(false) == false;
         assert StaticSample.pass_char('A') == 'A';
         assert StaticSample.pass_short(Short.MIN_VALUE) == Short.MIN_VALUE;
-        assert StaticSample.pass_short(Short.MIN_VALUE) == Short.MIN_VALUE;
+        assert StaticSample.pass_short(Short.MAX_VALUE) == Short.MAX_VALUE;
         assert StaticSample.pass_int(Integer.MIN_VALUE) == Integer.MIN_VALUE;
         assert StaticSample.pass_int(Integer.MAX_VALUE) == Integer.MAX_VALUE;
         assert StaticSample.pass_long(Long.MIN_VALUE) == Long.MIN_VALUE;
         assert StaticSample.pass_long(Long.MAX_VALUE) == Long.MAX_VALUE;
         assert StaticSample.pass_float(2.5f) == 2.5f;
+        assert StaticSample.pass_float(Float.MIN_VALUE) == Float.MIN_VALUE;
         assert StaticSample.pass_float(Float.MAX_VALUE) == Float.MAX_VALUE;
         assert StaticSample.pass_double(1.125) == 1.125;
+        assert StaticSample.pass_double(Double.MIN_VALUE) == Double.MIN_VALUE;
         assert StaticSample.pass_double(Double.MAX_VALUE) == Double.MAX_VALUE;
         assert StaticSample.pass_foo_bar(FooBar.Foo) == FooBar.Foo;
         assert StaticSample.pass_foo_bar(FooBar.Bar) == FooBar.Bar;
@@ -55,10 +57,10 @@ public class TestJavaBind {
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
         System.out.println("PASS: class functions with simple types");
 
-        assert StaticSample.pass_cast_byte(Byte.MIN_VALUE) == Byte.MIN_VALUE;
-        assert StaticSample.pass_cast_short(Short.MIN_VALUE) == Short.MIN_VALUE;
-        assert StaticSample.pass_cast_int(Integer.MIN_VALUE) == Integer.MIN_VALUE;
-        assert StaticSample.pass_cast_long(Long.MIN_VALUE) == Long.MIN_VALUE;
+        assert StaticSample.pass_cast_byte(Byte.MIN_VALUE, "128") == Byte.MIN_VALUE;
+        assert StaticSample.pass_cast_short(Short.MIN_VALUE, "32768") == Short.MIN_VALUE;
+        assert StaticSample.pass_cast_int(Integer.MIN_VALUE, "2147483648") == Integer.MIN_VALUE;
+        assert StaticSample.pass_cast_long(Long.MIN_VALUE, "9223372036854775808") == Long.MIN_VALUE;
         System.out.println("PASS: class functions with casting unsigned integer types");
 
         short max_unsigned_byte = 255;

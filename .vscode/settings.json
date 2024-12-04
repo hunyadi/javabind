@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "árvíztűrő",
         "Deallocator",
         "jarray",
         "javabind",
@@ -21,7 +22,8 @@
         "jthrowable",
         "Levente",
         "Ljava",
-        "tparam"
+        "tparam",
+        "tükörfúrógép"
     ],
     "C_Cpp.autoAddFileAssociations": false,
     "C_Cpp.default.cppStandard": "c++17",

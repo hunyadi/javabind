@@ -1,5 +1,6 @@
 @echo off
 setlocal
+chcp 65001
 
 rem Build the C++ library
 cmake -B build -D JAVABIND_INTEGER_SIGNED_CAST=ON -D JAVABIND_INTEGER_WIDENING_CONVERSION=OFF
