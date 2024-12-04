@@ -46,8 +46,10 @@ public class TestJavaBind {
         assert StaticSample.pass_hours(Duration.ofHours(1000)).equals(Duration.ofHours(1000));
         Instant instant1 = Instant.parse("1984-01-01T23:59:59.123456000Z");
         assert StaticSample.pass_time_point(instant1).equals(instant1);
-        Instant instant2 = Instant.parse("1900-01-01T23:59:59.123456000Z");
+        Instant instant2 = Instant.parse("1899-12-31T23:59:59.123456000Z");
         assert StaticSample.pass_time_point(instant2).equals(instant2);
+        Instant instant3 = Instant.parse("2082-02-28T00:00:00.123456000Z");
+        assert StaticSample.pass_time_point(instant3).equals(instant3);
         assert StaticSample.pass_string("ok").equals("ok");
         assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");

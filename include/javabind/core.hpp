@@ -746,6 +746,7 @@ namespace javabind
     template <> struct ArgType<uint8_t> { using type = JavaByteType; };
     template <> struct ArgType<uint16_t> { using type = JavaShortType<int16_t>; };
     template <> struct ArgType<uint32_t> { using type = JavaIntegerType<int32_t>; };
+    template <> struct ArgType<uint64_t> { using type = JavaLongType<int64_t>; };
 #elif defined(JAVABIND_INTEGER_WIDENING_CONVERSION)
     template <> struct ArgType<uint8_t> { using type = JavaShortType<uint8_t>; };
     template <> struct ArgType<uint16_t> { using type = JavaIntegerType<uint16_t>; };
@@ -753,7 +754,9 @@ namespace javabind
 #endif
     template <> struct ArgType<float> { using type = JavaFloatType; };
     template <> struct ArgType<double> { using type = JavaDoubleType; };
+#if !defined(JAVABIND_INTEGER_SIGNED_CAST)
     template <> struct ArgType<std::size_t> { using type = JavaLongType<std::size_t>; };
+#endif
     template <> struct ArgType<std::string> { using type = JavaStringType; };
     template <> struct ArgType<std::string_view> { using type = JavaUTF8StringViewType; };
     template <> struct ArgType<std::u16string_view> { using type = JavaUTF16StringViewType; };
