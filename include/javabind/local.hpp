@@ -41,6 +41,12 @@ namespace javabind
             }
         }
 
+        JavaException(jthrowable ex, std::string_view message)
+            : ex(ex)
+            , message(message)
+        {
+        }
+
         /**
          * Exceptions must not be copied as they contain a JNI local reference.
          */
@@ -63,6 +69,26 @@ namespace javabind
     private:
         jthrowable ex = nullptr;
         std::string message;
+    };
+
+    /**
+     * An exception that will be throw as java.lang.NullPointerException.
+     */
+    struct JavaNullPointerException : public JavaException
+    {
+        JavaNullPointerException(JNIEnv* env, std::string message)
+            : JavaException(new_exception(env, message), message)
+        {
+        }
+
+        jthrowable new_exception(JNIEnv* env, std::string message)
+        {
+            jclass cls = env->FindClass("java/lang/NullPointerException");
+            jmethodID init = env->GetMethodID(cls, "<init>", "(Ljava/lang/String;)V");
+            jobject exception = env->NewObject(cls, init, message);
+            env->DeleteLocalRef(cls);
+            return static_cast<jthrowable>(exception);
+        }
     };
 
     class LocalClassRef;

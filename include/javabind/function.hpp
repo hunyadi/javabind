@@ -71,6 +71,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type obj)
         {
+            if (obj == nullptr) {
+                throw JavaNullPointerException(env, "Function is null");
+            }
             GlobalObjectRef fun = GlobalObjectRef(env, obj);
             LocalClassRef cls(env, fun.ref());
             Method invoke = cls.getMethod(WrapperType::apply_fn, WrapperType::apply_sig);  // lifecycle bound to object reference

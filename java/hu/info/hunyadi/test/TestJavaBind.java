@@ -14,6 +14,15 @@ public class TestJavaBind {
         return source.replace(' ', '_');
     }
 
+    public static void assertThrowsNullPointerException(Runnable runnable) {
+        try {
+            runnable.run();
+            assert false;
+        } catch (Exception e) {
+            assert NullPointerException.class.isInstance(e);
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("LOAD: Java host application");
         System.loadLibrary("javabind_native");
@@ -55,6 +64,12 @@ public class TestJavaBind {
         assert StaticSample.pass_string("ok").equals("ok");
         assert StaticSample.pass_utf8_string("árvíztűrő tükörfúrógép").equals("árvíztűrő tükörfúrógép");
         StaticSample.pass_utf16_string("árvíztűrő tükörfúrógép");
+        assertThrowsNullPointerException(() -> StaticSample.pass_foo_bar(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_nanoseconds(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_time_point(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_string(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_utf8_string(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_utf16_string(null));
         System.out.println("PASS: class functions with simple types");
 
         assert StaticSample.pass_cast_byte(Byte.MIN_VALUE, "128") == Byte.MIN_VALUE;
@@ -75,6 +90,7 @@ public class TestJavaBind {
         assert StaticSample.pass_boxed_integer(Integer.valueOf(23)).equals(Integer.valueOf(23));
         assert StaticSample.pass_boxed_long(Long.MAX_VALUE).equals(Long.MAX_VALUE);
         assert StaticSample.pass_boxed_double(-Double.MAX_VALUE).equals(-Double.MAX_VALUE);
+        assertThrowsNullPointerException(() -> StaticSample.pass_boxed_boolean(null));
         System.out.println("PASS: class functions with boxed types");
 
         boolean[] bool_array = new boolean[] { true, false, false };
@@ -97,6 +113,8 @@ public class TestJavaBind {
         assert Arrays.equals(StaticSample.pass_long_array_view(long_array), long_array);
         assert Arrays.equals(StaticSample.pass_float_array_view(float_array), float_array);
         assert Arrays.equals(StaticSample.pass_double_array_view(double_array), double_array);
+        assertThrowsNullPointerException(() -> StaticSample.pass_bool_array(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_int_array(null));
         System.out.println("PASS: class functions with array types");
 
         assert StaticSample.pass_function("my string", s -> "'" + s + "'").equals("my string -> 'my string'");
@@ -108,11 +126,13 @@ public class TestJavaBind {
         StaticSample.apply_long_consumer(1989l, val -> System.out.println(val));
         StaticSample.apply_double_consumer(3.14159265359, val -> System.out.println(val));
         StaticSample.apply_string_consumer("start to finish", val -> System.out.println(val));
+        assertThrowsNullPointerException(() -> StaticSample.apply_int_consumer(23, null));
 
         assert StaticSample.apply_int_predicate(23, val -> val > 0);
         assert StaticSample.apply_long_predicate(1989l, val -> val > 0l);
         assert StaticSample.apply_double_predicate(3.14159265359, val -> val > 0.0);
         assert StaticSample.apply_string_predicate("start to finish", val -> val.startsWith("start"));
+        assertThrowsNullPointerException(() -> StaticSample.apply_int_predicate(23, null));
 
         assert StaticSample.apply_int_to_string_function(123, val -> String.valueOf(val)).equals("123");
         assert StaticSample.apply_long_to_string_function(456789, val -> String.valueOf(val)).equals("456789");
@@ -146,6 +166,7 @@ public class TestJavaBind {
         PrimitiveRecord source = new PrimitiveRecord((byte) 1, '@', (short) 2, 3, 4l, 5.0f, 6.0);
         PrimitiveRecord target = new PrimitiveRecord((byte) 2, '@', (short) 4, 6, 8l, 10.0f, 12.0);
         assert StaticSample.transform_record(source).equals(target);
+        assertThrowsNullPointerException(() -> StaticSample.pass_record(null));
         System.out.println("PASS: record class");
 
         try (Sample obj = Sample.create()) {
@@ -195,6 +216,11 @@ public class TestJavaBind {
                 .equals(Map.of(1, "one", 2, "two", 3, "three"));
         assert StaticSample.pass_ordered_map_with_int_value(Map.of("one", 1, "two", 2, "three", 3))
                 .equals(Map.of("one", 1, "two", 2, "three", 3));
+        assertThrowsNullPointerException(() -> StaticSample.pass_list(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_ordered_set(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_unordered_set(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_ordered_map(null));
+        assertThrowsNullPointerException(() -> StaticSample.pass_unordered_map(null));
         System.out.println("PASS: collections");
 
         assert StaticSample.pass_optional_rectangle(null) == null;
