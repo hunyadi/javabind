@@ -56,6 +56,9 @@ namespace javabind
 
         static T native_value(JNIEnv* env, jobject obj)
         {
+            if (obj == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             LocalClassRef objClass(env, obj);
 
             T native_object = T();

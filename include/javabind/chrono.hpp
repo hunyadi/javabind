@@ -74,6 +74,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaValue)
         {
+            if (javaValue == nullptr) {
+                throw JavaNullPointerException(env, "Duration is null");
+            }
             LocalClassRef durationClass(env, javaValue);
             auto toNative = durationClass.getMethod(JavaDurationTraits<native_type>::to_native_method, "()J");
             return native_type{ env->CallLongMethod(javaValue, toNative.ref()) / JavaDurationTraits<native_type>::factor };
@@ -95,6 +98,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaValue)
         {
+            if (javaValue == nullptr) {
+                throw JavaNullPointerException(env, "Instant is null");
+            }
             LocalClassRef instantClass(env, javaValue);
             auto getEpochSecond = instantClass.getMethod("getEpochSecond", "()J");
             auto getNano = instantClass.getMethod("getNano", "()I");

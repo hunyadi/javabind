@@ -83,6 +83,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaEnumValue)
         {
+            if (javaEnumValue == nullptr) {
+                throw JavaNullPointerException(env, msg() << "Enum " << class_name << " is null");
+            }
             LocalClassRef enum_class(env, javaEnumValue);
 
             try {

@@ -265,6 +265,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaList)
         {
+            if (javaList == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             list_view<element_type> view(env, javaList);
             native_type nativeList;
             std::size_t size = view.size();
@@ -307,6 +310,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaSet)
         {
+            if (javaSet == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             set_view<element_type> view(env, javaSet);
             set_view_iterator<element_type> iterator = view.iterator();
             native_type nativeSet;
@@ -353,6 +359,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type javaMap)
         {
+            if (javaMap == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             map_view<key_type, value_type> view(env, javaMap);
             map_view_iterator<key_type, value_type> iterator = view.iterator();
             native_type nativeMap;

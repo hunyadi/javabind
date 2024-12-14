@@ -9,7 +9,9 @@
  */
 
 #pragma once
+#include "exception.hpp"
 #include "local.hpp"
+#include "message.hpp"
 #include "type.hpp"
 #include "string.hpp"
 #include "view.hpp"
@@ -498,6 +500,9 @@ namespace javabind
          */
         static native_type native_value(JNIEnv* env, java_type obj)
         {
+            if (obj == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             // unbox from object
             LocalClassRef cls(env, obj);
             Method getValue = cls.getMethod(get_value_func.data(), get_value_func_sig);
@@ -545,6 +550,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, java_type value)
         {
+            if (value == nullptr) {
+                throw JavaNullPointerException(env, "String is null");
+            }
             jsize len = env->GetStringUTFLength(value);
             std::string s;
             if (len > 0) {
@@ -583,6 +591,9 @@ namespace javabind
 
         static wrapped_string_view native_value(JNIEnv* env, java_type value)
         {
+            if (value == nullptr) {
+                throw JavaNullPointerException(env, "String is null");
+            }
             return wrapped_string_view(env, value);
         }
 
@@ -603,6 +614,9 @@ namespace javabind
 
         static wrapped_u16string_view native_value(JNIEnv* env, java_type value)
         {
+            if (value == nullptr) {
+                throw JavaNullPointerException(env, "String is null");
+            }
             return wrapped_u16string_view(env, value);
         }
 
@@ -647,6 +661,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, jarray arr)
         {
+            if (arr == nullptr) {
+                throw JavaNullPointerException(env, msg() << java_name << " is null");
+            }
             std::size_t len = env->GetArrayLength(arr);
             native_type vec(len);
             arg_type_t<T>::native_array_value(env, arr, vec.data(), vec.size());
@@ -669,6 +686,9 @@ namespace javabind
 
         static native_type native_value(JNIEnv* env, jarray arr)
         {
+            if (arr == nullptr) {
+                throw JavaNullPointerException(env, "boolean[] is null");
+            }
             std::size_t len = env->GetArrayLength(arr);
             native_type vec;
             vec.reserve(len);
