@@ -68,6 +68,20 @@ inline std::string to_string(const std::chrono::system_clock::time_point& instan
     return std::string(buf, buf + n);
 }
 
+inline std::ostream& operator<<(std::ostream& os, char16_t ch)
+{
+    char fill = os.fill();
+    std::ios_base::fmtflags flags = os.flags();
+    std::streamsize width = os.width();
+    os.fill('0');
+    os.width(2);
+    os << std::hex << (static_cast<unsigned>(ch) >> 8) << (static_cast<unsigned>(ch) & 0xff);
+    os.fill(fill);
+    os.flags(flags);
+    os.width(width);
+    return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const std::chrono::nanoseconds& ns)
 {
     return os << ns.count() << "ns";

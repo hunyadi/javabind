@@ -76,16 +76,16 @@ namespace javabind
      */
     struct JavaNullPointerException : public JavaException
     {
-        JavaNullPointerException(JNIEnv* env, std::string message)
+        JavaNullPointerException(JNIEnv* env, const std::string& message)
             : JavaException(new_exception(env, message), message)
         {
         }
 
-        jthrowable new_exception(JNIEnv* env, std::string message)
+        static jthrowable new_exception(JNIEnv* env, const std::string& msg)
         {
             jclass cls = env->FindClass("java/lang/NullPointerException");
             jmethodID init = env->GetMethodID(cls, "<init>", "(Ljava/lang/String;)V");
-            jobject exception = env->NewObject(cls, init, message);
+            jobject exception = env->NewObject(cls, init, msg.data());
             env->DeleteLocalRef(cls);
             return static_cast<jthrowable>(exception);
         }
@@ -100,7 +100,8 @@ namespace javabind
     {
         Method(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
             : Method(env, cls, name.data(), signature)
-        {}
+        {
+        }
 
         Method(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
@@ -130,7 +131,8 @@ namespace javabind
     {
         StaticMethod(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
             : StaticMethod(env, cls, name.data(), signature)
-        {}
+        {
+        }
 
         StaticMethod(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
@@ -162,7 +164,8 @@ namespace javabind
     {
         Field(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
             : Field(env, cls, name.data(), signature)
-        {}
+        {
+        }
 
         Field(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
@@ -194,7 +197,8 @@ namespace javabind
     {
         StaticField(JNIEnv* env, jclass cls, const std::string_view& name, const std::string_view& signature)
             : StaticField(env, cls, name.data(), signature)
-        {}
+        {
+        }
 
         StaticField(JNIEnv* env, jclass cls, const char* name, const std::string_view& signature)
         {
@@ -231,7 +235,8 @@ namespace javabind
 
         LocalObjectRef(JNIEnv* env, jobject obj)
             : _env(env), _ref(obj)
-        {}
+        {
+        }
 
         LocalObjectRef(LocalObjectRef&& op)
             : _env(op._env)
@@ -265,7 +270,8 @@ namespace javabind
     public:
         LocalClassRef(JNIEnv* env, const std::string_view& name)
             : LocalClassRef(env, name.data())
-        {}
+        {
+        }
 
         LocalClassRef(JNIEnv* env, const char* name)
             : LocalClassRef(env, name, std::nothrow)
@@ -277,7 +283,8 @@ namespace javabind
 
         LocalClassRef(JNIEnv* env, const std::string_view& name, std::nothrow_t)
             : LocalClassRef(env, name.data(), std::nothrow)
-        {}
+        {
+        }
 
         LocalClassRef(JNIEnv* env, const char* name, std::nothrow_t)
             : _env(env)
@@ -294,7 +301,8 @@ namespace javabind
         LocalClassRef(JNIEnv* env, jclass cls)
             : _env(env)
             , _ref(cls)
-        {}
+        {
+        }
 
         ~LocalClassRef()
         {
